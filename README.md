@@ -24,17 +24,6 @@ Centralizar la gestión de proyectos académicos en una única plataforma, facil
 
 ---
 
-## 🎬 Demo
-
-> [!NOTE]
-> *Proyecto en desarrollo - Capturas de pantalla próximamente*
-
-<!-- Aquí puedes agregar un GIF o screenshot cuando tengas la aplicación funcionando:
-![Dashboard](./docs/screenshot-dashboard.png)
--->
-
----
-
 ## ✨ Características
 
 ### 👤 Gestión de Usuarios
@@ -69,7 +58,8 @@ Centralizar la gestión de proyectos académicos en una única plataforma, facil
 <td align="center" width="33%">
 
 ### Backend
-![Python](https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white) ![Flask](https://img.shields.io/badge/Flask-000000?style=flat&logo=flask&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white)
+![Flask](https://img.shields.io/badge/Flask-000000?style=flat&logo=flask&logoColor=white)
 
 Servidor web robusto y ligero
 
@@ -85,7 +75,8 @@ Base de datos relacional embebida
 <td align="center" width="33%">
 
 ### Frontend
-![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=html5&logoColor=white) ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat&logo=css3&logoColor=white)
+![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=html5&logoColor=white)
+![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat&logo=css3&logoColor=white)
 
 Diseño semántico y responsive
 
