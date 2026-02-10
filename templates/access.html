@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}Project Hub - Access{% endblock %}
+
+{% block content %}
+<h1>Project Hub</h1>
+
+<!-- Sección de Registro -->
+<section id="register-section">
+    <h2>Registro</h2>
+    <form id="register-form">
+        <input type="text" id="reg-username" placeholder="Usuario" required>
+        <input type="email" id="reg-email" placeholder="Email" required>
+        <input type="password" id="reg-password" placeholder="Contraseña (min 6 caracteres)" required>
+        <button type="submit">Registrarse</button>
+    </form>
+    <p id="register-message"></p>
+</section>
+
+<hr>
+
+<!-- Sección de Login -->
+<section id="login-section">
+    <h2>Iniciar Sesión</h2>
+    <form id="login-form">
+        <input type="text" id="login-username" placeholder="Usuario" required>
+        <input type="password" id="login-password" placeholder="Contraseña" required>
+        <button type="submit">Entrar</button>
+    </form>
+    <p id="login-message"></p>
+</section>
+
+<hr>
+
+<!-- Sección de Usuario Autenticado -->
+<section id="user-section" style="display: none;">
+    <h2>Bienvenido</h2>
+    <div id="user-info"></div>
+    <button id="logout-btn">Cerrar Sesión</button>
+    <button id="get-me-btn">Obtener Mi Info</button>
+</section>
+
+<hr>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const API_URL = 'http://127.0.0.1:8080';
+
+    // Registro
+    document.getElementById('register-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const username = document.getElementById('reg-username').value;
+        const email = document.getElementById('reg-email').value;
+        const password = document.getElementById('reg-password').value;
+
+        try {
+            const response = await fetch(`${API_URL}/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, email, password })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                document.getElementById('register-message').textContent = data.message;
+                document.getElementById('register-form').reset();
+            } else {
+                showError(response.status, data.error);
+            }
+        } catch (error) {
+            showError(500, 'Error de conexión');
+        }
+    });
+
+    // Login
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const username = document.getElementById('login-username').value;
+        const password = document.getElementById('login-password').value;
+
+        try {
+            const response = await fetch(`${API_URL}/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                document.getElementById('login-message').textContent = data.message;
+                document.getElementById('login-form').reset();
+                showUserSection(data.user);
+            } else {
+                showError(response.status, data.error);
+            }
+        } catch (error) {
+            showError(500, 'Error de conexión');
+        }
+    });
+
+    // Logout
+    document.getElementById('logout-btn').addEventListener('click', async () => {
+        try {
+            const response = await fetch(`${API_URL}/logout`, {
+                method: 'POST',
+                credentials: 'include'
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                alert(data.message);
+                hideUserSection();
+            } else {
+                showError(response.status, data.error);
+            }
+        } catch (error) {
+            showError(500, 'Error de conexión');
+        }
+    });
+
+    // Get Me
+    document.getElementById('get-me-btn').addEventListener('click', async () => {
+        try {
+            const response = await fetch(`${API_URL}/me`, {
+                method: 'GET',
+                credentials: 'include'
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                showUserSection(data);
+            } else {
+                showError(response.status, data.error);
+            }
+        } catch (error) {
+            showError(500, 'Error de conexión');
+        }
+    });
+
+    // Mostrar sección de usuario
+    function showUserSection(user) {
+        document.getElementById('user-section').style.display = 'block';
+        document.getElementById('user-info').innerHTML = `
+                <p><strong>ID:</strong> ${user.id}</p>
+                <p><strong>Usuario:</strong> ${user.username}</p>
+                <p><strong>Email:</strong> ${user.email}</p>
+                <p><strong>Cuenta creada:</strong> ${user.created_at}</p>
+            `;
+    }
+
+    // Ocultar sección de usuario
+    function hideUserSection() {
+        document.getElementById('user-section').style.display = 'none';
+        document.getElementById('user-info').innerHTML = '';
+    }
+</script>
+{% endblock %}

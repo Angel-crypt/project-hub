@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Project Hub{% endblock %}</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/logo/logo.ico') }}">
+    <link rel="shortcut icon" type="image/x-icon" href="{{ url_for('static', filename='images/logo/logo.ico') }}">
+
+    <!-- Web App Icons -->
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/logo/logo.png') }}">
+    <meta name="theme-color" content="#2563eb">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+
+    <!-- Error Handler JS -->
+    <script src="{{ url_for('static', filename='js/error-handler.js') }}"></script>
+
+    {% block extra_head %}{% endblock %}
+</head>
+
+<body>
+    <div id="error-display" style="display: none;">
+        <h3>Error</h3>
+        <img id="error-cat" src="" alt="Error" style="max-width: 300px;">
+        <p id="error-message"></p>
+    </div>
+
+    {% block content %}{% endblock %}
+
+    {% block scripts %}{% endblock %}
+</body>
+
+</html>
