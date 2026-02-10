@@ -1,24 +1,7 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_cors import CORS
-from datetime import datetime, timezone, timedelta
-from models import init_db, AuthUser
-
-def convert_to_mexico_time(utc_timestamp):
-    """Convierte timestamp UTC a hora de México (UTC-6)"""
-    if not utc_timestamp:
-        return None
-    
-    # Parsear el timestamp UTC de SQLite
-    dt_utc = datetime.strptime(utc_timestamp, '%Y-%m-%d %H:%M:%S')
-    dt_utc = dt_utc.replace(tzinfo=timezone.utc)
-    
-    # Convertir a hora de México (UTC-6)
-    mexico_tz = timezone(timedelta(hours=-6))
-    dt_mexico = dt_utc.astimezone(mexico_tz)
-    
-    # Formato legible
-    return dt_mexico.strftime('%d/%m/%Y %H:%M:%S')
+from models import init_db, User, Project, convert_to_mexico_time
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'aaaaa'
@@ -30,7 +13,7 @@ login_manager.init_app(app)
 
 @login_manager.user_loader
 def load_user(user_id):
-    return AuthUser.get_user_object(int(user_id))
+    return User.get_user_object(int(user_id))
 
 @login_manager.unauthorized_handler
 def unauthorized():
@@ -38,9 +21,7 @@ def unauthorized():
 
 init_db()
 
-@app.route('/')
-def index():
-    return render_template('access.html')
+# ── Auth ──────────────────────────────────────────────
 
 @app.route('/register', methods=['POST'])
 def register():
@@ -52,13 +33,10 @@ def register():
     if len(data['password']) < 6:
         return jsonify({'error': 'La contraseña debe tener al menos 6 caracteres'}), 422
     
-    result = AuthUser.create(data['username'], data['email'], data['password'])
+    result = User.create(data['username'], data['email'], data['password'])
     
     if result['success']:
-        return jsonify({
-            'message': 'Usuario registrado correctamente',
-            'id': result['id']
-        }), 201
+        return jsonify({'message': 'Usuario registrado correctamente'}), 201
     
     return jsonify({'error': result['error']}), 409
 
@@ -69,7 +47,7 @@ def login():
     if not data or not all(k in data for k in ['username', 'password']):
         return jsonify({'error': 'Faltan campos: username y password son obligatorios'}), 422
     
-    result = AuthUser.verify_password(data['username'], data['password'])
+    result = User.verify_password(data['username'], data['password'])
     
     if result['success']:
         login_user(result['user'])
@@ -100,6 +78,100 @@ def get_current_user():
         'email': current_user.email,
         'created_at': convert_to_mexico_time(current_user.created_at)
     }), 200
+
+# ── Projects ──────────────────────────────────────────
+
+@app.route('/projects', methods=['POST'])
+@login_required
+def create_project():
+    data = request.get_json()
+    
+    if not data or 'title' not in data:
+        return jsonify({'error': 'El campo title es obligatorio'}), 422
+    
+    result = Project.create(
+        user_id=current_user.id,
+        title=data['title'],
+        description=data.get('description'),
+        is_public=data.get('is_public', False)
+    )
+    
+    if result['success']:
+        return jsonify({'message': 'Proyecto creado', 'id': result['id']}), 201
+    
+    return jsonify({'error': result['error']}), 400
+
+@app.route('/projects', methods=['GET'])
+@login_required
+def get_my_projects():
+    result = Project.get_user_projects(current_user.id)
+    
+    if result['success']:
+        return jsonify([p.to_dict() for p in result['data']]), 200
+    
+    return jsonify({'error': result['error']}), 500
+
+@app.route('/projects/public', methods=['GET'])
+def get_public_projects():
+    user_id = current_user.id if current_user.is_authenticated else None
+    result = Project.get_public_projects(exclude_user_id=user_id)
+    
+    if result['success']:
+        return jsonify([p.to_dict() for p in result['data']]), 200
+    
+    return jsonify({'error': result['error']}), 500
+
+@app.route('/projects/<int:project_id>', methods=['GET'])
+def get_project(project_id):
+    user_id = current_user.id if current_user.is_authenticated else None
+    result = Project.get_by_id(project_id, requesting_user_id=user_id)
+    
+    if result['success']:
+        return jsonify(result['data'].to_dict()), 200
+    
+    if 'permisos' in result['error']:
+        return jsonify({'error': result['error']}), 403
+    
+    return jsonify({'error': result['error']}), 404
+
+@app.route('/projects/<int:project_id>', methods=['PUT'])
+@login_required
+def update_project(project_id):
+    data = request.get_json()
+    
+    if not data or 'title' not in data:
+        return jsonify({'error': 'El campo title es obligatorio'}), 422
+    
+    result = Project.update(
+        project_id=project_id,
+        user_id=current_user.id,
+        title=data['title'],
+        description=data.get('description'),
+        is_public=data.get('is_public', False)
+    )
+    
+    if result['success']:
+        return jsonify({'message': 'Proyecto actualizado'}), 200
+    
+    if 'permisos' in result['error']:
+        return jsonify({'error': result['error']}), 403
+    
+    return jsonify({'error': result['error']}), 404
+
+@app.route('/projects/<int:project_id>', methods=['DELETE'])
+@login_required
+def delete_project(project_id):
+    result = Project.delete(project_id=project_id, user_id=current_user.id)
+    
+    if result['success']:
+        return jsonify({'message': 'Proyecto eliminado'}), 200
+    
+    if 'permisos' in result['error']:
+        return jsonify({'error': result['error']}), 403
+    
+    return jsonify({'error': result['error']}), 404
+
+# ── Error Handlers ────────────────────────────────────
 
 @app.errorhandler(404)
 def not_found(error):

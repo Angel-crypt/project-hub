@@ -1,4 +1,5 @@
 import sqlite3
+from datetime import datetime, timezone, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 
@@ -9,6 +10,32 @@ def get_db():
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row
     return conn
+
+def convert_to_mexico_time(utc_timestamp):
+    """Convierte timestamp UTC a hora de México (UTC-6)"""
+    if not utc_timestamp:
+        return None
+    
+    # Si ya es objeto datetime, convertir
+    if isinstance(utc_timestamp, datetime):
+        dt_utc = utc_timestamp
+        if dt_utc.tzinfo is None:
+            dt_utc = dt_utc.replace(tzinfo=timezone.utc)
+    else:
+        # Parsear string UTC de SQLite
+        try:
+            dt_utc = datetime.strptime(utc_timestamp, '%Y-%m-%d %H:%M:%S')
+            dt_utc = dt_utc.replace(tzinfo=timezone.utc)
+        except (ValueError, TypeError):
+            return utc_timestamp
+
+    # Convertir a hora de México (UTC-6)
+    # Nota: México tiene horario de verano en algunos municipios, pero UTC-6 es el estándar general
+    mexico_tz = timezone(timedelta(hours=-6))
+    dt_mexico = dt_utc.astimezone(mexico_tz)
+    
+    # Formato legible
+    return dt_mexico.strftime('%d/%m/%Y %H:%M:%S')
 
 def init_db():
     """Inicializa las tablas de la base de datos"""
@@ -78,7 +105,7 @@ class User(UserMixin):
                 ).fetchone()
                 
                 if user:
-                    return AuthUser(user['id'], user['username'], user['email'], user['created_at'])
+                    return User(user['id'], user['username'], user['email'], user['created_at'])
                 return None
         except Exception:
             return None
@@ -94,7 +121,7 @@ class User(UserMixin):
                 ).fetchone()
                 
                 if user and check_password_hash(user['password_hash'], password):
-                    return {'success': True, 'user': AuthUser(user['id'], user['username'], user['email'], user['created_at'])}
+                    return {'success': True, 'user': User(user['id'], user['username'], user['email'], user['created_at'])}
                 return {'success': False, 'error': 'Credenciales inválidas'}
         except Exception:
             return {'success': False, 'error': 'Error al verificar credenciales'}
@@ -120,9 +147,9 @@ class Project:
             'user_id': self.user_id,
             'title': self.title,
             'description': self.description,
-            'is_public': self.is_public,
-            'created_at': self.created_at,
-            'updated_at': self.updated_at
+            'is_public': bool(self.is_public),
+            'created_at': convert_to_mexico_time(self.created_at),
+            'updated_at': convert_to_mexico_time(self.updated_at)
         }
     
     
