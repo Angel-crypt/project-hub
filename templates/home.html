@@ -3,12 +3,7 @@
 {% block title %}Project HUB - Inicio{% endblock %}
 
 {% block content %}
-<div class="login-page">
-    <div class="login-card">
-        <div class="login-header">
-            <h2>Bienvenido, {{ session.get('user_name', 'Usuario') }}</h2>
-        </div>
-        <a href="{{ url_for('auth.logout') }}" class="login-btn" style="display:inline-block;text-decoration:none;text-align:center">Cerrar Sesión</a>
-    </div>
+<div class="page-header">
+    <h1>Bienvenido, {{ session.get('user_name', 'Usuario') }}</h1>
 </div>
 {% endblock %}
