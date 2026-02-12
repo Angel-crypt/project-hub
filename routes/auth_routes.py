@@ -7,44 +7,58 @@ auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 @auth_bp.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
-        enrrollment_number = request.form.get("enrrollment_number")
-        name = request.form.get("name")
-        password = request.form.get("password")
-        role = request.form.get("role", "leader")
-
-        response, status_code = AuthService.register(
-            enrrollment_number, name, password, role
+        user, error, status_code = AuthService.register(
+            enrrollment_number=request.form.get("enrrollment_number"),
+            name=request.form.get("name"),
+            password=request.form.get("password"),
         )
 
-        if status_code == 201:
-            flash("Registro exitoso. Por favor inicia sesión.", "success")
-            return redirect(url_for("auth.login"))
-        else:
-            flash(response["message"], "error")
-            return render_template("auth/register.html"), status_code
+        if error:
+            return render_template("auth/register.html", error=error, status_code=status_code), status_code
+
+        flash("Registro exitoso. Por favor inicia sesión.", "success")
+        return redirect(url_for("auth.login"))
 
     return render_template("auth/register.html")
+
+
+@auth_bp.route("/register-admin", methods=["GET", "POST"])
+def register_admin():
+    if session.get("role") != "admin":
+        return redirect(url_for("auth.login"))
+
+    if request.method == "POST":
+        user, error, status_code = AuthService.register(
+            enrrollment_number=request.form.get("enrrollment_number"),
+            name=request.form.get("name"),
+            password=request.form.get("password"),
+            role="admin",
+        )
+
+        if error:
+            return render_template("auth/register_admin.html", error=error, status_code=status_code), status_code
+
+        flash("Administrador registrado exitosamente.", "success")
+        return redirect(url_for("auth.register_admin"))
+
+    return render_template("auth/register_admin.html")
 
 
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        enrrollment_number = request.form.get("name")
-        password = request.form.get("password")
+        user, error, status_code = AuthService.login(
+            enrrollment_number=request.form.get("enrrollment_number"),
+            password=request.form.get("password"),
+        )
 
-        response, status_code = AuthService.login(enrrollment_number, password)
+        if error:
+            return render_template("auth/login.html", error=error, status_code=status_code), status_code
 
-        if status_code == 200:
-            user = response["user"]
-            session["user_id"] = user.id
-            session["user_name"] = user.name
-            session["role"] = user.role.value
-            return redirect(url_for("dashboard.dashboard_index"))
-        else:
-            return (
-                render_template("auth/login.html", error=response["message"], status_code=status_code),
-                status_code,
-            )
+        session["user_id"] = user.id
+        session["user_name"] = user.name
+        session["role"] = user.role.value
+        return redirect(url_for("home"))
 
     return render_template("auth/login.html")
 
