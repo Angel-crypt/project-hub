@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from services.auth_service import AuthService
+from utils.decorators import admin_required
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
@@ -23,10 +24,8 @@ def register():
 
 
 @auth_bp.route("/register-admin", methods=["GET", "POST"])
+@admin_required
 def register_admin():
-    if session.get("role") != "admin":
-        return redirect(url_for("auth.login"))
-
     if request.method == "POST":
         user, error, status_code = AuthService.register(
             enrrollment_number=request.form.get("enrrollment_number"),
