@@ -1,0 +1,235 @@
+:root {
+    --bg-color: white;
+    --card-bg: #eaddcf;
+    --text-color: #111827;
+    --accent-primary: #1f2937;
+    --accent-secondary: #e5e7eb;
+    --input-bg: #f3f4f6;
+}
+
+/* Global Styles */
+body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    line-height: 1.5;
+}
+
+/* Login Page Specifics */
+.login-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.login-card {
+    background-color: transparent;
+    width: 100%;
+    max-width: 500px;
+    text-align: center;
+}
+
+/* Tabs */
+.auth-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.auth-tab {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: 0.9rem;
+    border: 1px solid #d1d5db;
+    /* Subtle border */
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.auth-tab.active {
+    background-color: var(--accent-primary);
+    color: #ffffff;
+    border-color: var(--accent-primary);
+}
+
+.auth-tab.inactive {
+    background-color: transparent;
+    /* Or light color */
+    color: var(--text-color);
+    border-color: #9ca3af;
+}
+
+.auth-tab.inactive:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+
+.login-header {
+    margin-bottom: 2rem;
+}
+
+.login-header h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.05em;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+    text-align: left;
+    /* Inputs aligned left, but container centered? */
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text-color);
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: none;
+    background-color: var(--input-bg);
+    border-radius: 6px;
+    font-size: 1rem;
+    font-family: var(--font-sans);
+    /* Inputs usually sans for readability? Or mono? formatting guide said mono headers.. let's keep sans for input text */
+    transition: box-shadow 0.2s;
+    box-sizing: border-box;
+    color: #374151;
+}
+
+.form-input:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--accent-primary);
+}
+
+.login-btn {
+    width: 100%;
+    max-width: 400px;
+    padding: 0.875rem;
+    background-color: var(--accent-primary);
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-family: var(--font-mono);
+    cursor: pointer;
+    transition: opacity 0.2s;
+    margin-top: 1rem;
+}
+
+.login-btn:hover {
+    opacity: 0.9;
+}
+
+/* Toggle Password */
+.password-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.password-toggle-btn {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #6b7280;
+    padding: 0;
+    display: flex;
+    align-items: center;
+}
+
+/* Flash Messages */
+.flash-message {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    z-index: 1000;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: white;
+}
+
+.flash-success {
+    background-color: #10b981;
+}
+
+.flash-error {
+    background-color: #dc2626;
+}
+
+/* Error Modal */
+.error-overlay {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.error-modal {
+    background-color: #fefefe;
+    padding: 2rem;
+    border-radius: 12px;
+    max-width: 420px;
+    width: 90%;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.error-modal img {
+    max-width: 100%;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.error-modal p {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #dc2626;
+    margin: 0;
+}
+
+.error-close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.75rem;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #6b7280;
+    line-height: 1;
+}
+
+.error-close:hover {
+    color: #111827;
+}
