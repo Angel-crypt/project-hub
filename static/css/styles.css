@@ -5,6 +5,8 @@
     --accent-primary: #1f2937;
     --accent-secondary: #e5e7eb;
     --input-bg: #f3f4f6;
+    --sidebar-width: 240px;
+    --sidebar-collapsed-width: 60px;
 }
 
 /* Global Styles */
@@ -16,7 +18,216 @@ body {
     line-height: 1.5;
 }
 
-/* Login Page Specifics */
+/* ========== App Layout (authenticated) ========== */
+.app-layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+    width: var(--sidebar-width);
+    background-color: var(--accent-primary);
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    transition: width 0.25s ease;
+    overflow: hidden;
+}
+
+.sidebar-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.sidebar-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    white-space: nowrap;
+}
+
+.sidebar-toggle {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    padding: 0.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.sidebar-toggle:hover {
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-toggle svg {
+    transition: transform 0.25s ease;
+}
+
+.sidebar-role {
+    font-size: 0.7rem;
+    background-color: rgba(255, 255, 255, 0.15);
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    display: inline-block;
+    margin-top: 0.5rem;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+}
+
+.sidebar-nav {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem 0;
+}
+
+.sidebar-icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1.5rem;
+    color: rgba(255, 255, 255, 0.75);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.sidebar-link:hover {
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-label {
+    transition: opacity 0.2s ease;
+}
+
+.sidebar-bottom {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-user {
+    display: block;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 0.5rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: opacity 0.2s ease;
+}
+
+.sidebar-logout {
+    color: rgba(255, 255, 255, 0.5) !important;
+    font-size: 0.8rem;
+}
+
+.sidebar-logout:hover {
+    color: #f87171 !important;
+    background-color: transparent !important;
+}
+
+/* Sidebar Collapsed */
+body.sidebar-collapsed .sidebar {
+    width: var(--sidebar-collapsed-width);
+}
+
+body.sidebar-collapsed .sidebar-title,
+body.sidebar-collapsed .sidebar-role,
+body.sidebar-collapsed .sidebar-label,
+body.sidebar-collapsed .sidebar-user {
+    display: none;
+}
+
+body.sidebar-collapsed .sidebar-toggle svg {
+    transform: rotate(180deg);
+}
+
+body.sidebar-collapsed .sidebar-link {
+    justify-content: center;
+    padding: 0.75rem 0;
+    gap: 0;
+}
+
+body.sidebar-collapsed .sidebar-header {
+    padding: 1rem 0;
+}
+
+body.sidebar-collapsed .sidebar-header-top {
+    justify-content: center;
+}
+
+body.sidebar-collapsed .sidebar-bottom {
+    padding: 0.75rem 0;
+    text-align: center;
+}
+
+body.sidebar-collapsed .main-content {
+    margin-left: var(--sidebar-collapsed-width);
+}
+
+body.sidebar-collapsed .app-footer--auth {
+    margin-left: var(--sidebar-collapsed-width);
+}
+
+/* Main Content */
+.main-content {
+    flex: 1;
+    margin-left: var(--sidebar-width);
+    padding: 2rem;
+}
+
+.page-header h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin: 0 0 1.5rem 0;
+}
+
+/* Footer */
+.app-footer {
+    padding: 1rem 2rem;
+    border-top: 1px solid var(--accent-secondary);
+    text-align: center;
+    transition: margin-left 0.25s ease;
+}
+
+.app-footer--auth {
+    margin-left: var(--sidebar-width);
+}
+
+.app-footer p {
+    margin: 0;
+    font-size: 0.8rem;
+    color: #9ca3af;
+}
+
+/* ========== Public Layout (login/register) ========== */
 .login-page {
     display: flex;
     justify-content: center;
@@ -44,11 +255,9 @@ body {
     padding: 0.75rem 1.5rem;
     border-radius: 8px;
     text-decoration: none;
-    font-family: var(--font-mono);
     font-weight: 600;
     font-size: 0.9rem;
     border: 1px solid #d1d5db;
-    /* Subtle border */
     transition: all 0.2s;
     cursor: pointer;
 }
@@ -61,7 +270,6 @@ body {
 
 .auth-tab.inactive {
     background-color: transparent;
-    /* Or light color */
     color: var(--text-color);
     border-color: #9ca3af;
 }
@@ -69,7 +277,6 @@ body {
 .auth-tab.inactive:hover {
     background-color: rgba(0, 0, 0, 0.05);
 }
-
 
 .login-header {
     margin-bottom: 2rem;
@@ -82,10 +289,10 @@ body {
     letter-spacing: -0.05em;
 }
 
+/* Forms */
 .form-group {
     margin-bottom: 1.5rem;
     text-align: left;
-    /* Inputs aligned left, but container centered? */
     max-width: 400px;
     margin-left: auto;
     margin-right: auto;
@@ -106,8 +313,6 @@ body {
     background-color: var(--input-bg);
     border-radius: 6px;
     font-size: 1rem;
-    font-family: var(--font-sans);
-    /* Inputs usually sans for readability? Or mono? formatting guide said mono headers.. let's keep sans for input text */
     transition: box-shadow 0.2s;
     box-sizing: border-box;
     color: #374151;
@@ -127,7 +332,6 @@ body {
     border: none;
     border-radius: 6px;
     font-size: 1rem;
-    font-family: var(--font-mono);
     cursor: pointer;
     transition: opacity 0.2s;
     margin-top: 1rem;
@@ -157,7 +361,7 @@ body {
     align-items: center;
 }
 
-/* Flash Messages */
+/* ========== Flash Messages ========== */
 .flash-message {
     position: fixed;
     top: 20px;
@@ -179,7 +383,7 @@ body {
     background-color: #dc2626;
 }
 
-/* Error Modal */
+/* ========== Error Modal ========== */
 .error-overlay {
     position: fixed;
     z-index: 1000;
