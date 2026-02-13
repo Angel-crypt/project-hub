@@ -35,12 +35,12 @@ def register_admin():
         )
 
         if error:
-            return render_template("auth/register_admin.html", error=error, status_code=status_code), status_code
+            return render_template("admin/register_admin.html", error=error, status_code=status_code), status_code
 
         flash("Administrador registrado exitosamente.", "success")
-        return redirect(url_for("auth.register_admin"))
+        return redirect(url_for("admin.register_admin"))
 
-    return render_template("auth/register_admin.html")
+    return render_template("admin/register_admin.html")
 
 
 @auth_bp.route("/login", methods=["GET", "POST"])
