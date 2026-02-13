@@ -293,6 +293,9 @@ body.sidebar-collapsed .app-footer--auth {
 .form-group {
     margin-bottom: 1.5rem;
     text-align: left;
+}
+
+.login-page .form-group {
     max-width: 400px;
     margin-left: auto;
     margin-right: auto;
@@ -324,8 +327,6 @@ body.sidebar-collapsed .app-footer--auth {
 }
 
 .login-btn {
-    width: 100%;
-    max-width: 400px;
     padding: 0.875rem;
     background-color: var(--accent-primary);
     color: #ffffff;
@@ -335,6 +336,11 @@ body.sidebar-collapsed .app-footer--auth {
     cursor: pointer;
     transition: opacity 0.2s;
     margin-top: 1rem;
+}
+
+.login-page .login-btn {
+    width: 100%;
+    max-width: 400px;
 }
 
 .login-btn:hover {
@@ -359,6 +365,19 @@ body.sidebar-collapsed .app-footer--auth {
     padding: 0;
     display: flex;
     align-items: center;
+}
+
+/* ========== Authenticated Forms ========== */
+.content-form {
+    max-width: 480px;
+}
+
+.content-form .form-input {
+    max-width: 100%;
+}
+
+.content-form .login-btn {
+    width: 100%;
 }
 
 /* ========== Flash Messages ========== */
