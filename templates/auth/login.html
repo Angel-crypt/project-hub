@@ -39,10 +39,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
-    function togglePassword() {
-        const passwordInput = document.getElementById('password');
-        passwordInput.type = passwordInput.type === 'password' ? 'text' : 'password';
-    }
-</script>
+<script src="{{ url_for('static', filename='js/toggle-password.js') }}"></script>
 {% endblock %}
