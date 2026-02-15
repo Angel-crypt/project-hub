@@ -25,7 +25,7 @@ def register():
 
 @auth_bp.route("/register-admin", methods=["GET", "POST"])
 @admin_required
-def register_admin():
+def manage_admin():
     if request.method == "POST":
         user, error, status_code = AuthService.register(
             enrrollment_number=request.form.get("enrrollment_number"),
@@ -35,12 +35,12 @@ def register_admin():
         )
 
         if error:
-            return render_template("admin/register_admin.html", error=error, status_code=status_code), status_code
+            return render_template("admin/manage_admin.html", error=error, status_code=status_code), status_code
 
         flash("Administrador registrado exitosamente.", "success")
-        return redirect(url_for("admin.register_admin"))
+        return redirect(url_for("auth.manage_admin"))
 
-    return render_template("admin/register_admin.html")
+    return render_template("admin/manage_admin.html")
 
 
 @auth_bp.route("/login", methods=["GET", "POST"])
