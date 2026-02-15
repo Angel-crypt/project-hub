@@ -380,6 +380,40 @@ body.sidebar-collapsed .app-footer--auth {
     width: 100%;
 }
 
+.content-form .login-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+/* ========== Field Hints & Validation ========== */
+.field-hint {
+    display: block;
+    font-size: 0.78rem;
+    color: #6b7280;
+    margin-top: 0.35rem;
+}
+
+.char-count {
+    font-weight: 600;
+    color: #dc2626;
+}
+
+.char-count--ok {
+    color: #10b981;
+}
+
+.field-error {
+    display: block;
+    font-size: 0.8rem;
+    color: #dc2626;
+    margin-top: 0.25rem;
+    min-height: 1.2em;
+}
+
+.form-input--error {
+    box-shadow: 0 0 0 2px #dc2626;
+}
+
 /* ========== Flash Messages ========== */
 .flash-message {
     position: fixed;
