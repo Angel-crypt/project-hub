@@ -2,7 +2,7 @@ from flask import Flask, redirect, url_for, render_template
 from models import db
 from routes import auth_bp, user_bp, call_bp
 from utils.decorators import login_required
-from utils.seed import seed_users
+from utils.seed import seed_users, seed_calls
 
 
 def create_app():
@@ -21,6 +21,7 @@ def create_app():
     with app.app_context():
         db.create_all()
         seed_users()
+        seed_calls()
 
     @app.route("/")
     def index():
