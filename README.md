@@ -1,314 +1,176 @@
 <div align="center">
 
-# 📚 Project Hub
+# Project Hub
 
-### Plataforma de Gestión de Proyectos Académicos
+### Plataforma de Gestion de Proyectos Academicos
 
-[![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/) [![Flask](https://img.shields.io/badge/Flask-3.0.0-000000?style=for-the-badge&logo=flask&logoColor=white)](https://flask.palletsprojects.com/) [![SQLite](https://img.shields.io/badge/SQLite-3-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://www.sqlite.org/) [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](./LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/) [![Flask](https://img.shields.io/badge/Flask-3.1-000000?style=for-the-badge&logo=flask&logoColor=white)](https://flask.palletsprojects.com/) [![SQLite](https://img.shields.io/badge/SQLite-3-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://www.sqlite.org/) [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](./LICENSE)
 
-*Una solución centralizada y sencilla para gestionar proyectos, notas y archivos académicos*
-
-[Características](#-características) • [Instalación](#-instalación) • [Uso](#-uso) • [Documentación](#-documentación-técnica)
+*Organiza tus proyectos universitarios, sube archivos y colabora con otros estudiantes desde un solo lugar.*
 
 </div>
 
 ---
 
-## 📋 Descripción
+## Capturas de pantalla
 
-**Project Hub** es una plataforma web diseñada específicamente para entornos universitarios, que permite a los estudiantes gestionar sus proyectos académicos de manera eficiente y organizada. Con una interfaz intuitiva y funcionalidades completas de CRUD, los usuarios pueden crear proyectos, tomar notas, subir archivos y colaborar compartiendo proyectos públicos.
+### Autenticacion
 
-### 🎯 Objetivo
+| Login | Registro |
+|:-----:|:--------:|
+| ![Login](docs/screenshots/login.png) | ![Registro](docs/screenshots/register.png) |
 
-Centralizar la gestión de proyectos académicos en una única plataforma, facilitando la organización, colaboración y seguimiento de trabajos universitarios.
+### Pagina de inicio
 
----
+![Inicio](docs/screenshots/home.png)
 
-## ✨ Características
+### Convocatorias
 
-### 👤 Gestión de Usuarios
-- ✅ Registro de nuevos usuarios
-- ✅ Inicio de sesión seguro
-- ✅ Cierre de sesión
-- ✅ Perfiles de usuario personalizados
+| Listado de convocatorias | Detalle de convocatoria |
+|:------------------------:|:-----------------------:|
+| ![Convocatorias](docs/screenshots/calls.png) | ![Detalle convocatoria](docs/screenshots/call-detail.png) |
 
-### 📁 Gestión de Proyectos
-- ✅ **CRUD completo** (Crear, Leer, Actualizar, Eliminar)
-- ✅ Proyectos **públicos** o **privados**
-- ✅ Dashboard personalizado con vista de proyectos propios
-- ✅ Exploración de proyectos públicos de otros usuarios
+### Proyectos
 
-### 📝 Sistema de Notas
-- ✅ Crear notas asociadas a cada proyecto
-- ✅ Editar y eliminar notas
-- ✅ Organización por proyecto
+| Listado de proyectos | Detalle de proyecto |
+|:--------------------:|:-------------------:|
+| ![Proyectos](docs/screenshots/projects.png) | ![Detalle proyecto](docs/screenshots/project-detail.png) |
 
-### 📎 Gestión de Archivos
-- ✅ Subir archivos a proyectos
-- ✅ Descargar archivos
-- ✅ Eliminar archivos
-- ✅ Almacenamiento organizado por proyecto
+### Gestion de usuarios (Admin / Owner)
 
----
+| Administradores | Lideres |
+|:---------------:|:-------:|
+| ![Admins](docs/screenshots/manage-admins.png) | ![Lideres](docs/screenshots/manage-users.png) |
 
-## 🛠️ Tecnologías
+### Modales
 
-<table>
-<tr>
-<td align="center" width="33%">
-
-### Backend
-![Python](https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white)
-![Flask](https://img.shields.io/badge/Flask-000000?style=flat&logo=flask&logoColor=white)
-
-Servidor web robusto y ligero
-
-</td>
-<td align="center" width="33%">
-
-### Base de Datos
-![SQLite](https://img.shields.io/badge/SQLite-003B57?style=flat&logo=sqlite&logoColor=white)
-
-Base de datos relacional embebida
-
-</td>
-<td align="center" width="33%">
-
-### Frontend
-![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=html5&logoColor=white)
-![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat&logo=css3&logoColor=white)
-
-Diseño semántico y responsive
-
-</td>
-</tr>
-</table>
+| Crear / Editar | Confirmar eliminacion |
+|:--------------:|:---------------------:|
+| ![Modal formulario](docs/screenshots/modal-form.png) | ![Modal confirmar](docs/screenshots/modal-confirm.png) |
 
 ---
 
-## 🚀 Instalación
+## Que es Project Hub?
 
-### Prerrequisitos
+**Project Hub** es una aplicacion web pensada para universidades donde estudiantes, administradores y coordinadores pueden gestionar proyectos academicos vinculados a convocatorias. Permite subir archivos, controlar quien ve cada proyecto y administrar usuarios segun su rol.
 
+---
+
+## Que puedes hacer?
+
+### Como Lider (Estudiante)
+- Registrarte e iniciar sesion con tu numero de matricula
+- Crear proyectos dentro de convocatorias activas
+- Subir archivos (PDF, Word, imagenes) a tus proyectos
+- Decidir si tu proyecto y archivos son publicos o privados
+- Explorar proyectos publicos de otros estudiantes
+
+### Como Administrador
+- Gestionar convocatorias (crear, editar, eliminar)
+- Ver todos los proyectos y archivos del sistema
+- Administrar cuentas de los lideres
+
+### Como Owner (Coordinador)
+- Todo lo anterior, mas gestionar cuentas de administradores
+
+---
+
+## Como instalar
+
+### Necesitas tener
 - Python 3.8 o superior
-- pip (gestor de paquetes de Python)
+- pip (viene incluido con Python)
 - Git
 
-### Pasos de Instalación
+### Pasos
 
-#### 1️⃣ Clonar el Repositorio
-
+**1. Clonar el repositorio**
 ```bash
 git clone https://github.com/tu-usuario/project-hub.git
 cd project-hub
 ```
 
-#### 2️⃣ Crear Entorno Virtual
+**2. Crear entorno virtual**
 
-**Linux / macOS:**
+Linux / macOS:
 ```bash
 python -m venv venv
 source venv/bin/activate
 ```
 
-**Windows:**
+Windows:
 ```bash
 python -m venv venv
 venv\Scripts\activate
 ```
 
-#### 3️⃣ Instalar Dependencias
-
+**3. Instalar dependencias**
 ```bash
 pip install -r requirements.txt
 ```
 
-#### 4️⃣ Ejecutar la Aplicación
-
+**4. Ejecutar la aplicacion**
 ```bash
-python app.py
+python index.py
 ```
 
-#### 5️⃣ Acceder a la Aplicación
-
-Abre tu navegador y visita:
+**5. Abrir en el navegador**
 ```
 http://127.0.0.1:5000
 ```
 
-> [!TIP]
-> Si encuentras problemas con el puerto 5000, puedes modificar el puerto en `app.py` cambiando el parámetro `port` en `app.run()`.
+> Si el puerto 5000 esta ocupado, puedes cambiar el puerto en `index.py`.
 
 ---
 
-## 📂 Estructura del Proyecto
+## Como funciona
 
 ```
-project-hub/
-│
-├── 📁 static/                    # Archivos estáticos
-│   ├── 📁 css/
-│   │   └── styles.css           # Estilos CSS principales
-│   ├── 📁 js/
-│   │   └── scripts.js           # Scripts JavaScript
-│   └── 📁 uploads/              # Archivos subidos por usuarios
-│
-├── 📁 templates/                 # Plantillas HTML
-│   └── base.html                # Plantilla base
-│
-├── .gitignore                   # Archivos ignorados por Git
-├── LICENSE                      # Licencia del proyecto
-├── README.md                    # Este archivo
-├── app.py                       # Aplicación principal Flask
-├── models.py                    # Modelos de base de datos
-└── requirements.txt             # Dependencias del proyecto
+Registrarte --> Iniciar sesion --> Ver convocatorias --> Crear proyecto --> Subir archivos
 ```
 
-### 📄 Descripción de Archivos Principales
-
-| Archivo | Descripción |
-|---------|-------------|
-| `app.py` | Punto de entrada de la aplicación Flask. Contiene las rutas y lógica del servidor |
-| `models.py` | Define los modelos de datos y funciones de base de datos usando SQLite3 |
-| `requirements.txt` | Dependencias de Python necesarias para el proyecto |
-| `static/` | Recursos estáticos (CSS, JavaScript, archivos subidos) |
-| `templates/` | Plantillas HTML renderizadas por Flask |
+1. **Registrate** con tu numero de matricula y un nombre
+2. **Inicia sesion** para acceder al panel principal
+3. **Explora las convocatorias** activas disponibles
+4. **Crea un proyecto** asociado a una convocatoria
+5. **Sube archivos** (PDF, DOC, imagenes) a tu proyecto
+6. **Controla la visibilidad**: decide quien puede ver tu trabajo
 
 ---
 
-## 💡 Uso
+## Roles del sistema
 
-### Flujo de Trabajo Típico
-
-```mermaid
-graph LR
-    A[Registro/Login] --> B[Dashboard]
-    B --> C[Crear Proyecto]
-    B --> D[Ver Mis Proyectos]
-    B --> E[Explorar Públicos]
-    C --> F[Agregar Notas/Archivos]
-```
-
-### 📖 Guía Paso a Paso
-
-1. **Registro e Inicio de Sesión**
-   - Accede a la página principal
-   - Regístrate con tus credenciales o inicia sesión si ya tienes cuenta
-
-2. **Dashboard**
-   - Visualiza todos tus proyectos en un solo lugar
-   - Accede rápidamente a proyectos recientes
-
-3. **Crear un Proyecto**
-   - Haz clic en "Nuevo Proyecto"
-   - Completa la información del proyecto
-   - Define si será **público** (visible para todos) o **privado** (solo para ti)
-
-4. **Gestionar Proyecto**
-   - **Notas:** Agrega notas para documentar avances, ideas o recordatorios
-   - **Archivos:** Sube documentos, imágenes, código fuente, etc.
-   - **Editar:** Modifica la información del proyecto en cualquier momento
-   - **Eliminar:** Borra proyectos que ya no necesites
-
-5. **Explorar Proyectos Públicos**
-   - Descubre proyectos de otros estudiantes
-   - Inspírate con trabajos de la comunidad
-   - Modo solo lectura para respetar la autoría
+| Rol | Que puede hacer |
+|-----|-----------------|
+| **Leader** | Crear proyectos, subir archivos, ver proyectos publicos |
+| **Admin** | Todo lo de Leader + gestionar convocatorias y usuarios |
+| **Owner** | Todo lo de Admin + gestionar administradores |
 
 ---
 
-## 📚 Documentación Técnica
+## Tipos de archivos permitidos
 
-### Arquitectura
-
-**Project Hub** sigue el patrón **MVC (Model-View-Controller)**:
-
-- **Model** (`models.py`): Define la estructura de datos y funciones de base de datos usando SQLite3
-- **View** (`templates/`): Plantillas HTML que renderizan la interfaz de usuario
-- **Controller** (`app.py`): Rutas Flask que manejan la lógica de negocio
-
-### Base de Datos
-
-#### Esquema de Datos
-
-```mermaid
-erDiagram
-    USER ||--o{ PROJECT : creates
-    PROJECT ||--o{ NOTE : contains
-    PROJECT ||--o{ FILE : has
-    
-    USER {
-        int id PK
-        string username
-        string email
-        string password_hash
-        datetime created_at
-    }
-    
-    PROJECT {
-        int id PK
-        int user_id FK
-        string title
-        string description
-        boolean is_public
-        datetime created_at
-    }
-    
-    NOTE {
-        int id PK
-        int project_id FK
-        string title
-        string content
-        datetime created_at
-    }
-    
-    FILE {
-        int id PK
-        int project_id FK
-        string filename
-        string filepath
-        datetime uploaded_at
-    }
-```
-
-### API Endpoints
-
-| Método | Ruta | Descripción |
-|--------|------|-------------|
-| `GET` | `/` | Página principal |
-| `GET/POST` | `/register` | Registro de usuario |
-| `GET/POST` | `/login` | Inicio de sesión |
-| `GET` | `/logout` | Cierre de sesión |
-| `GET` | `/dashboard` | Dashboard del usuario |
-| `GET/POST` | `/project/new` | Crear nuevo proyecto |
-| `GET` | `/project/<id>` | Ver proyecto |
-| `POST` | `/project/<id>/edit` | Editar proyecto |
-| `POST` | `/project/<id>/delete` | Eliminar proyecto |
-| `POST` | `/project/<id>/note` | Agregar nota |
-| `POST` | `/project/<id>/upload` | Subir archivo |
+- PDF (.pdf)
+- Word (.doc, .docx)
+- Imagenes (.png, .jpg, .jpeg)
+- Peso maximo: 10 MB por archivo
 
 ---
 
-## 🤝 Contribuciones
+## Documentacion tecnica
 
-Las contribuciones son bienvenidas. Para contribuir:
-
-1. Fork el proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
+Para informacion detallada sobre la arquitectura, rutas, base de datos y estructura del codigo, consulta el documento [TECHNICAL.md](./TECHNICAL.md).
 
 ---
 
-## 📄 Licencia
+## Licencia
 
-Este proyecto está bajo la Licencia MIT. Consulta el archivo [LICENSE](./LICENSE) para más detalles.
+Este proyecto esta bajo la Licencia MIT. Consulta el archivo [LICENSE](./LICENSE) para mas detalles.
 
 ---
 
 <div align="center">
 
-**Hecho con ❤️ para estudiantes universitarios**
+**Hecho para estudiantes universitarios**
 
 </div>
