@@ -1,17 +1,21 @@
-from models import db, Project, Call, User
+from datetime import datetime
+from models import db, Project
 
 
 class ProjectService:
     @staticmethod
     def create(name, description, leader_id, call_id):
         if not name or not name.strip():
-            return None, "El nombre del proyecto es obligatorio.", 422
+            return None, "El nombre es obligatorio.", 422
 
-        if not User.query.get(leader_id):
-            return None, "El líder asignado no existe.", 422
+        if not leader_id:
+            return None, "El líder del proyecto es obligatorio.", 422
 
-        if not Call.query.get(call_id):
-            return None, "La convocatoria no existe.", 422
+        if not call_id:
+            return None, "La convocatoria del proyecto es obligatoria.", 422
+
+        if Project.query.filter_by(name=name.strip()).first():
+            return None, "Ya existe un proyecto con ese nombre.", 409
 
         try:
             project = Project(
@@ -23,7 +27,7 @@ class ProjectService:
             db.session.add(project)
             db.session.commit()
             return project, None, None
-        except Exception:
+        except Exception as e:
             db.session.rollback()
             return None, "Error al crear el proyecto.", 500
 
@@ -36,37 +40,29 @@ class ProjectService:
         return Project.query.get(project_id)
 
     @staticmethod
-    def get_by_call(call_id):
-        return Project.query.filter_by(call_id=call_id).all()
-
-    @staticmethod
-    def get_by_leader(leader_id):
-        return Project.query.filter_by(leader_id=leader_id).all()
-
-    @staticmethod
     def update(project_id, **kwargs):
         project = Project.query.get(project_id)
         if not project:
             return None, "Proyecto no encontrado.", 404
 
+        if "name" in kwargs:
+            new_name = kwargs["name"].strip()
+            existing = Project.query.filter(
+                Project.name == new_name, Project.id != project_id
+            ).first()
+            if existing:
+                return None, "Ya existe un proyecto con ese nombre.", 409
+            project.name = new_name
+
         try:
-            if "name" in kwargs:
-                project.name = kwargs["name"].strip()
             if "description" in kwargs:
                 project.description = kwargs["description"]
-            if "leader_id" in kwargs:
-                if not User.query.get(kwargs["leader_id"]):
-                    return None, "El líder asignado no existe.", 422
-                project.leader_id = kwargs["leader_id"]
-            if "call_id" in kwargs:
-                if not Call.query.get(kwargs["call_id"]):
-                    return None, "La convocatoria no existe.", 422
-                project.call_id = kwargs["call_id"]
 
             db.session.commit()
             return project, None, None
-        except Exception:
+        except Exception as e:
             db.session.rollback()
+            print(f"[ProjectService.update] {e}")
             return None, "Error al actualizar el proyecto.", 500
 
     @staticmethod
@@ -74,6 +70,8 @@ class ProjectService:
         project = Project.query.get(project_id)
         if not project:
             return None, "Proyecto no encontrado.", 404
+
+
 
         try:
             db.session.delete(project)
