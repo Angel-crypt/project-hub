@@ -21,6 +21,7 @@
                 <th>Descripción</th>
                 <th>Fecha de apertura</th>
                 <th>Fecha de cierre</th>
+                <th>Estado</th>
                 {% if session.get('role') in ['owner', 'admin'] %}
                 <th>Acciones</th>
                 {% endif %}
@@ -28,11 +29,24 @@
         </thead>
         <tbody>
             {% for call in calls %}
-            <tr>
+            <tr style="{{ '' if call.is_active else 'opacity: 0.55;' }}">
                 <td>{{ call.title }}</td>
                 <td>{{ call.description }}</td>
                 <td>{{ call.opening_date.strftime('%d/%m/%Y') }}</td>
                 <td>{{ call.closing_date.strftime('%d/%m/%Y') }}</td>
+                <td>
+                    {% if call.is_active %}
+                    <span style="display: inline-flex; align-items: center; gap: 0.35rem; color: #059669; font-weight: 500; font-size: 0.85rem;">
+                        <span style="width: 8px; height: 8px; background: #10b981; border-radius: 50; display: inline-block;"></span>
+                        Activa
+                    </span>
+                    {% else %}
+                    <span style="display: inline-flex; align-items: center; gap: 0.35rem; color: #9ca3af; font-weight: 500; font-size: 0.85rem;">
+                        <span style="width: 8px; height: 8px; background: #d1d5db; border-radius: 50%; display: inline-block;"></span>
+                        Inactiva
+                    </span>
+                    {% endif %}
+                </td>
                 {% if session.get('role') in ['owner', 'admin'] %}
                 <td class="table-actions">
                     <a href="{{ url_for('call.view_call', call_id=call.id) }}" class="btn-action" title="Ver Detalles">
