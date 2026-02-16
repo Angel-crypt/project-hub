@@ -8,7 +8,7 @@ auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 def register():
     if request.method == "POST":
         user, error, status_code = AuthService.register(
-            enrollment_number =request.form.get("enrollment_number "),
+            enrollment_number=request.form.get("enrollment_number"),
             name=request.form.get("name"),
             password=request.form.get("password"),
         )
@@ -31,7 +31,7 @@ def register():
 def login():
     if request.method == "POST":
         user, error, status_code = AuthService.login(
-            enrollment_number =request.form.get("enrollment_number "),
+            enrollment_number=request.form.get("enrollment_number"),
             password=request.form.get("password"),
         )
 

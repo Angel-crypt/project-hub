@@ -10,7 +10,7 @@ user_bp = Blueprint("user", __name__, url_prefix="/user")
 def manage_admin():
     if request.method == "POST":
         user, error, status_code = UserService.create(
-            enrollment_number =request.form.get("enrollment_number "),
+            enrollment_number=request.form.get("enrollment_number"),
             name=request.form.get("name"),
             password=request.form.get("password"),
             role="admin",

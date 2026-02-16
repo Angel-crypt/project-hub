@@ -3,10 +3,10 @@ from models import db, User, RoleEnum
 
 class AuthService:
     @staticmethod
-    def register(enrollment_number , name, password):
-        enrollment_number  = enrollment_number .strip().upper() if enrollment_number  else ""
+    def register(enrollment_number, name, password):
+        enrollment_number = enrollment_number.strip().upper() if enrollment_number else ""
 
-        if not enrollment_number  or len(enrollment_number ) > 10:
+        if not enrollment_number or len(enrollment_number) > 10:
             return None, "Matrícula inválida (máx. 10 caracteres).", 422
 
         if not name:
@@ -15,12 +15,12 @@ class AuthService:
         if not password or len(password) < 6:
             return None, "La contraseña debe tener al menos 6 caracteres.", 422
 
-        if User.query.filter_by(enrollment_number =enrollment_number ).first():
+        if User.query.filter_by(enrollment_number=enrollment_number).first():
             return None, "No se pudo completar el registro.", 409
 
         try:
             user = User(
-                enrollment_number =enrollment_number ,
+                enrollment_number=enrollment_number,
                 name=name,
                 password=password,
                 role=RoleEnum.LEADER,
@@ -33,9 +33,9 @@ class AuthService:
             return None, "Error al registrar usuario.", 500
 
     @staticmethod
-    def login(enrollment_number , password):
-        enrollment_number  = enrollment_number .strip().upper() if enrollment_number  else ""
-        user = User.query.filter_by(enrollment_number =enrollment_number ).first()
+    def login(enrollment_number, password):
+        enrollment_number = enrollment_number.strip().upper() if enrollment_number else ""
+        user = User.query.filter_by(enrollment_number=enrollment_number).first()
 
         if not user or not user.check_password(password):
             return None, "Matrícula o contraseña incorrecta.", 401
