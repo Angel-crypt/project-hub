@@ -10,80 +10,15 @@
     </button>
 </div>
 
-{% if admins %}
-<div class="table-wrapper">
-    <table class="data-table">
-        <thead>
-            <tr>
-                <th>Matrícula</th>
-                <th>Nombre</th>
-                <th>Fecha de creación</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for admin in admins %}
-            <tr>
-                <td>{{ admin.enrrollment_number }}</td>
-                <td>{{ admin.name }}</td>
-                <td>{{ admin.created_at.strftime('%d/%m/%Y') }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-{% else %}
-<p class="empty-state">No hay administradores registrados.</p>
-{% endif %}
+{% set users = admins %}
+{% set empty_message = "No hay administradores registrados." %}
+{% include 'partials/_user_table.html' %}
 
-<!-- Modal Crear Admin -->
-<div class="modal-overlay" id="modal-create" onclick="if(event.target===this)this.style.display='none'">
-    <div class="modal">
-        <div class="modal-header">
-            <h2>Registrar Administrador</h2>
-            <button type="button" class="modal-close" onclick="document.getElementById('modal-create').style.display='none'">&times;</button>
-        </div>
-        <form action="{{ url_for('user.manage_admin') }}" method="POST" class="content-form" data-validate novalidate>
-            <div class="form-group">
-                <label for="enrrollment_number">Matrícula</label>
-                <input type="text" id="enrrollment_number" name="enrrollment_number" class="form-input" maxlength="10"
-                    placeholder="Ej. A01234567" style="text-transform:uppercase" required
-                    data-validate-field data-error-required="La matrícula es obligatoria.">
-                <span class="field-hint">Máximo 10 caracteres.</span>
-                <span class="field-error" id="enrrollment_number-error"></span>
-            </div>
-
-            <div class="form-group">
-                <label for="name">Nombre Completo</label>
-                <input type="text" id="name" name="name" class="form-input" placeholder="Nombre del Administrador"
-                    required data-validate-field data-error-required="El nombre es obligatorio.">
-                <span class="field-hint">Campo obligatorio.</span>
-                <span class="field-error" id="name-error"></span>
-            </div>
-
-            <div class="form-group">
-                <label for="password">Contraseña</label>
-                <div class="password-wrapper">
-                    <input type="password" id="password" name="password" class="form-input"
-                        placeholder="Min. 6 caracteres" minlength="6" required
-                        data-validate-field data-counter="password-count"
-                        data-error-required="La contraseña es obligatoria."
-                        data-error-minlength="Debe tener al menos 6 caracteres.">
-                    <button type="button" class="password-toggle-btn" onclick="togglePassword()">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                            <circle cx="12" cy="12" r="3"></circle>
-                        </svg>
-                    </button>
-                </div>
-                <span class="field-hint">Mínimo 6 caracteres. <span id="password-count" class="char-count"></span></span>
-                <span class="field-error" id="password-error"></span>
-            </div>
-
-            <button type="submit" class="login-btn" disabled>Registrar Admin</button>
-        </form>
-    </div>
-</div>
+{% set modal_title = "Registrar Administrador" %}
+{% set form_action = url_for('user.manage_admin') %}
+{% set name_placeholder = "Nombre del Administrador" %}
+{% set submit_label = "Registrar Admin" %}
+{% include 'partials/_user_form_modal.html' %}
 {% endblock %}
 
 {% block scripts %}
