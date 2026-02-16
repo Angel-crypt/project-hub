@@ -21,4 +21,4 @@ class Deliverable(db.Model):
         self.project_id = project_id
 
     def __repr__(self):
-        return f"<Entregable {self.title}>"
+        return f"<Archivo {self.name}>"
