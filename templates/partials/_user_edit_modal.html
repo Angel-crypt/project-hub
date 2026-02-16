@@ -2,10 +2,10 @@
     <div class="modal">
         <div class="modal-header">
             <h2>{{ edit_modal_title }}</h2>
-            <button type="button" class="modal-close" onclick="document.getElementById('modal-edit').style.display='none'">&times;</button>
+            <button type="button" class="modal-close"
+                onclick="document.getElementById('modal-edit').style.display='none'">×</button>
         </div>
-        <form id="edit-form" class="content-form" data-validate novalidate
-            onsubmit="return submitEdit(event)">
+        <form id="edit-form" class="content-form" data-validate novalidate onsubmit="return submitEdit(event)">
             <div class="form-group">
                 <label for="edit-name">Nombre Completo</label>
                 <input type="text" id="edit-name" name="name" class="form-input" placeholder="{{ name_placeholder }}"
