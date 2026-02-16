@@ -1,8 +1,9 @@
+from typing import Optional, Union
 from datetime import datetime
 from models import db, Call
 
 
-def _parse_date(value):
+def _parse_date(value: Union[str, datetime, None]) -> Optional[datetime]:
     if not value:
         return None
     if isinstance(value, datetime):
@@ -12,7 +13,12 @@ def _parse_date(value):
 
 class CallService:
     @staticmethod
-    def create(title, description, opening_date, closing_date):
+    def create(
+        title: str,
+        description: str,
+        opening_date: Union[str, datetime],
+        closing_date: Union[str, datetime],
+    ) -> tuple[Optional[Call], Optional[str], Optional[int]]:
         if not title or not title.strip():
             return None, "El título es obligatorio.", 422
 
@@ -43,21 +49,27 @@ class CallService:
             return None, "Error al crear la convocatoria.", 500
 
     @staticmethod
-    def get_all():
+    def get_all() -> list[Call]:
         return Call.query.all()
 
     @staticmethod
-    def get_by_id(call_id):
+    def get_by_id(call_id: int) -> Optional[Call]:
         return Call.query.get(call_id)
 
     @staticmethod
-    def update(call_id, **kwargs):
+    def update(
+        call_id: int,
+        title: Optional[str] = None,
+        description: Optional[str] = None,
+        opening_date: Optional[Union[str, datetime]] = None,
+        closing_date: Optional[Union[str, datetime]] = None,
+    ) -> tuple[Optional[Call], Optional[str], Optional[int]]:
         call = Call.query.get(call_id)
         if not call:
             return None, "Convocatoria no encontrada.", 404
 
-        if "title" in kwargs:
-            new_title = kwargs["title"].strip()
+        if title is not None:
+            new_title = title.strip()
             existing = Call.query.filter(
                 Call.title == new_title, Call.id != call_id
             ).first()
@@ -66,12 +78,12 @@ class CallService:
             call.title = new_title
 
         try:
-            if "description" in kwargs:
-                call.description = kwargs["description"]
-            if "opening_date" in kwargs:
-                call.opening_date = _parse_date(kwargs["opening_date"])
-            if "closing_date" in kwargs:
-                call.closing_date = _parse_date(kwargs["closing_date"])
+            if description is not None:
+                call.description = description
+            if opening_date is not None:
+                call.opening_date = _parse_date(opening_date)
+            if closing_date is not None:
+                call.closing_date = _parse_date(closing_date)
 
             db.session.commit()
             return call, None, None
@@ -81,7 +93,7 @@ class CallService:
             return None, "Error al actualizar la convocatoria.", 500
 
     @staticmethod
-    def delete(call_id):
+    def delete(call_id: int) -> tuple[Optional[Call], Optional[str], Optional[int]]:
         call = Call.query.get(call_id)
         if not call:
             return None, "Convocatoria no encontrada.", 404
