@@ -1,6 +1,6 @@
 from flask import Flask, redirect, url_for, render_template
 from models import db
-from routes import auth_bp
+from routes import auth_bp, user_bp
 from utils.decorators import login_required
 
 
@@ -17,6 +17,7 @@ def create_app():
 
     # Registrar blueprints
     app.register_blueprint(auth_bp)
+    app.register_blueprint(user_bp)
 
     @app.route("/")
     def index():
