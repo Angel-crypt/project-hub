@@ -132,3 +132,20 @@ def delete_project(project_id):
 
     except Exception as e:
         return jsonify({"error": "Error interno del servidor."}), 500
+
+
+@project_bp.route("/<int:project_id>", methods=["GET"])
+@login_required
+def view_project(project_id):
+    project = ProjectService.get_by_id(project_id)
+    if not project:
+        return render_template("404.html"), 404
+
+    role = session.get("role")
+    user_id = session.get("user_id")
+
+    # Permission check
+    if role not in ["admin", "owner"] and project.leader_id != user_id:
+        return render_template("403.html"), 403
+
+    return render_template("project/view_project.html", project=project)

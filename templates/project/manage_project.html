@@ -44,7 +44,14 @@
                 {% if session.get('role') in ['owner', 'admin'] %}
                 <td>{{ project.leader.name if project.leader else 'Sin líder' }}</td>
                 <td class="table-actions">
-
+                    <a href="{{ url_for('project.view_project', project_id=project.id) }}" class="btn-action btn-edit"
+                        title="Ver Detalles">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </a>
                     <!-- Admin/Owner cannot edit, only delete -->
                     <!-- Actually user said "no puede actualizar ni eliminar" initially, then "Owner/Admin si puede eliminar, no puede actualizar" -->
                     <!-- But for STUDENTS (who see this table filtered), they should see update actions? -->
@@ -67,6 +74,14 @@
                 {% else %}
                 <!-- Student Actions -->
                 <td class="table-actions">
+                    <a href="{{ url_for('project.view_project', project_id=project.id) }}" class="btn-action btn-edit"
+                        title="Ver Detalles">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </a>
                     <button type="button" class="btn-action btn-edit" title="Editar" onclick="openProjectEditModal(
                             '{{ url_for('project.update_project', project_id=project.id) }}',
                             '{{ project.name }}',
