@@ -43,7 +43,7 @@ class DeliverableService:
         )
 
     @staticmethod
-    def create(name, description, project_id, file):
+    def create(name, description, project_id, file, is_public=False):
         if not file or file.filename == "":
             return None, "No se ha seleccionado ningún archivo.", 400
 
@@ -81,6 +81,7 @@ class DeliverableService:
                 description=description,
                 file_path=relative_path,
                 project_id=project_id,
+                is_public=is_public,
             )
 
             db.session.add(new_deliverable)
@@ -90,6 +91,23 @@ class DeliverableService:
         except Exception as e:
             db.session.rollback()
             return None, str(e), 500
+
+    @staticmethod
+    def toggle_visibility(deliverable_id, user_id, role):
+        deliverable = Deliverable.query.get(deliverable_id)
+        if not deliverable:
+            return None, "Archivo no encontrado.", 404
+
+        if role not in ["admin", "owner"] and deliverable.project.leader_id != user_id:
+            return None, "No tienes permiso para cambiar la visibilidad.", 403
+
+        try:
+            deliverable.is_public = not deliverable.is_public
+            db.session.commit()
+            return deliverable, None, None
+        except Exception as e:
+            db.session.rollback()
+            return None, "Error al cambiar la visibilidad.", 500
 
     @staticmethod
     def get_by_project(project_id):

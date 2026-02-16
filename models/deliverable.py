@@ -10,15 +10,17 @@ class Deliverable(db.Model):
     description = db.Column(db.Text, nullable=False)
     file_path = db.Column(db.String(255), nullable=False)
     project_id = db.Column(db.Integer, db.ForeignKey("projects.id"), nullable=False)
+    is_public = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     project = db.relationship("Project", backref="deliverables", lazy=True)
 
-    def __init__(self, name, description, file_path, project_id):
+    def __init__(self, name, description, file_path, project_id, is_public=False):
         self.name = name
         self.description = description
         self.file_path = file_path
         self.project_id = project_id
+        self.is_public = is_public
 
     def __repr__(self):
         return f"<Archivo {self.name}>"

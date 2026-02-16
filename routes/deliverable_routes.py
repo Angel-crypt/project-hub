@@ -17,7 +17,12 @@ def view_deliverable(deliverable_id):
     role = session.get("role")
     user_id = session.get("user_id")
 
-    if role not in ["admin", "owner"] and project.leader_id != user_id and not project.is_public:
+    is_authorized = (
+        role in ["admin", "owner"]
+        or project.leader_id == user_id
+        or (project.is_public and deliverable.is_public)
+    )
+    if not is_authorized:
         return jsonify({"error": "No tienes permiso para ver este archivo."}), 403
 
     filename = os.path.basename(deliverable.file_path)
@@ -34,7 +39,12 @@ def download_deliverable(deliverable_id):
     role = session.get("role")
     user_id = session.get("user_id")
 
-    if role not in ["admin", "owner"] and project.leader_id != user_id and not project.is_public:
+    is_authorized = (
+        role in ["admin", "owner"]
+        or project.leader_id == user_id
+        or (project.is_public and deliverable.is_public)
+    )
+    if not is_authorized:
         return jsonify({"error": "No tienes permiso para descargar este archivo."}), 403
 
     filename = os.path.basename(deliverable.file_path)
@@ -62,12 +72,13 @@ def upload_deliverable(project_id):
     file = request.files["file"]
     name = request.form.get("name")
     description = request.form.get("description")
+    is_public = request.form.get("is_public") == "true"
 
     if not name or not description:
         return jsonify({"error": "Nombre y descripción son obligatorios."}), 400
 
     deliverable, error, status = DeliverableService.create(
-        name, description, project_id, file
+        name, description, project_id, file, is_public=is_public
     )
 
     if error:
@@ -84,6 +95,24 @@ def upload_deliverable(project_id):
     )
 
 
+@deliverable_bp.route("/<int:deliverable_id>/visibility", methods=["PATCH"])
+@login_required
+def toggle_file_visibility(deliverable_id):
+    deliverable, error, status = DeliverableService.toggle_visibility(
+        deliverable_id=deliverable_id,
+        user_id=session.get("user_id"),
+        role=session.get("role"),
+    )
+
+    if error:
+        return jsonify({"error": error}), status
+
+    return jsonify({
+        "message": "Visibilidad actualizada.",
+        "is_public": deliverable.is_public,
+    }), 200
+
+
 @deliverable_bp.route("/<int:deliverable_id>", methods=["PUT"])
 @login_required
 def update_deliverable(deliverable_id):
@@ -97,7 +126,7 @@ def update_deliverable(deliverable_id):
     name = data.get("name")
     description = data.get("description")
 
-    if not name and not description:
+    if not name and not description and "is_public" not in data:
         return jsonify({"error": "Nada que actualizar."}), 400
 
     try:
@@ -105,6 +134,8 @@ def update_deliverable(deliverable_id):
             deliverable.name = name
         if description:
             deliverable.description = description
+        if "is_public" in data:
+            deliverable.is_public = bool(data["is_public"])
 
         db.session.commit()
         return jsonify({"message": "Archivo actualizado exitosamente."}), 200
