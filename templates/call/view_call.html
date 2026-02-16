@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block title %}Project HUB - Detalle de Convocatoria{% endblock %}
+
+{% block content %}
+<div class="page-header page-header--row">
+    <h1>{{ call.title }}</h1>
+    <a href="{{ url_for('call.view_all') }}" class="btn-action" title="Volver"
+        style="width: auto; padding: 0.5rem 1rem;">
+        Volver
+    </a>
+</div>
+
+<div class="content-card">
+    <div class="detail-section">
+        <h3>Descripción</h3>
+        <p>{{ call.description }}</p>
+    </div>
+
+    <div class="detail-grid">
+        <div class="detail-item">
+            <span class="detail-label">Fecha de Apertura</span>
+            <span class="detail-value">{{ call.opening_date.strftime('%d/%m/%Y') }}</span>
+        </div>
+        <div class="detail-item">
+            <span class="detail-label">Fecha de Cierre</span>
+            <span class="detail-value">{{ call.closing_date.strftime('%d/%m/%Y') }}</span>
+        </div>
+    </div>
+</div>
+
+{% if session.get('role') in ['owner', 'admin'] %}
+<div class="page-header" style="margin-top: 2rem;">
+    <h2>Proyectos Vinculados</h2>
+</div>
+
+{% if call.projects %}
+<div class="table-wrapper">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Nombre del Proyecto</th>
+                <th>Líder</th>
+                <th>Fecha de Creación</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for project in call.projects %}
+            <tr>
+                <td>{{ project.name }}</td>
+                <td>{{ project.leader.name if project.leader else 'Sin líder' }}</td>
+                <td>{{ project.created_at.strftime('%d/%m/%Y') }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<p class="empty-state">No hay proyectos vinculados a esta convocatoria.</p>
+{% endif %}
+{% endif %}
+
+<style>
+    .content-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .detail-section {
+        margin-bottom: 2rem;
+    }
+
+    .detail-section h3 {
+        margin: 0 0 0.5rem 0;
+        font-size: 1.1rem;
+        color: var(--accent-primary);
+    }
+
+    .detail-section p {
+        margin: 0;
+        color: var(--text-color);
+    }
+
+    .detail-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 2rem;
+    }
+
+    .detail-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .detail-label {
+        font-size: 0.85rem;
+        color: #6b7280;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .detail-value {
+        font-size: 1.1rem;
+        font-weight: 500;
+    }
+</style>
+{% endblock %}

@@ -35,8 +35,14 @@
                 <td>{{ call.closing_date.strftime('%d/%m/%Y') }}</td>
                 {% if session.get('role') in ['owner', 'admin'] %}
                 <td class="table-actions">
-                    <button type="button" class="btn-action btn-edit" title="Editar"
-                        onclick="openCallEditModal(
+                    <a href="{{ url_for('call.view_call', call_id=call.id) }}" class="btn-action" title="Ver Detalles">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </a>
+                    <button type="button" class="btn-action btn-edit" title="Editar" onclick="openCallEditModal(
                             '{{ url_for('call.update_call', call_id=call.id) }}',
                             '{{ call.title }}',
                             '{{ call.description }}',
@@ -54,7 +60,8 @@
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <polyline points="3 6 5 6 21 6"></polyline>
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                            </path>
                         </svg>
                     </button>
                 </td>
@@ -77,8 +84,7 @@
             <button type="button" class="modal-close"
                 onclick="document.getElementById('modal-call').style.display='none'">&times;</button>
         </div>
-        <form id="call-form" class="content-form" data-validate novalidate
-            onsubmit="return submitCallForm(event)">
+        <form id="call-form" class="content-form" data-validate novalidate onsubmit="return submitCallForm(event)">
             <div class="form-group">
                 <label for="call-title">Título</label>
                 <input type="text" id="call-title" name="title" class="form-input" maxlength="80"
