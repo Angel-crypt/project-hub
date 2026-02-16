@@ -128,6 +128,7 @@ def toggle_visibility(project_id):
         project, error, status_code = ProjectService.toggle_visibility(
             project_id=project_id,
             user_id=session.get("user_id"),
+            role=session.get("role"),
         )
 
         if error:

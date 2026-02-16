@@ -80,12 +80,12 @@ class ProjectService:
             return None, "Error al actualizar el proyecto.", 500
 
     @staticmethod
-    def toggle_visibility(project_id, user_id):
+    def toggle_visibility(project_id, user_id, role):
         project = Project.query.get(project_id)
         if not project:
             return None, "Proyecto no encontrado.", 404
 
-        if project.leader_id != user_id:
+        if role not in ["admin", "owner"] and project.leader_id != user_id:
             return None, "No tienes permiso para cambiar la visibilidad.", 403
 
         try:

@@ -1,7 +1,7 @@
 function updatePublicLabel() {
     var label = document.getElementById('project-public-label');
     var checked = document.getElementById('project-is-public').checked;
-    label.textContent = checked ? 'Hacer proyecto privado' : 'Hacer proyecto p\u00fablico';
+    label.textContent = checked ? 'Hacer proyecto privado' : 'Hacer proyecto público';
 }
 
 function openProjectCreateModal(actionUrl) {
