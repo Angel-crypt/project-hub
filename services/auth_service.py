@@ -3,7 +3,7 @@ from models import db, User, RoleEnum
 
 class AuthService:
     @staticmethod
-    def register(enrrollment_number, name, password, role="leader"):
+    def register(enrrollment_number, name, password):
         enrrollment_number = enrrollment_number.strip().upper() if enrrollment_number else ""
 
         if not enrrollment_number or len(enrrollment_number) > 10:
@@ -19,12 +19,11 @@ class AuthService:
             return None, "No se pudo completar el registro.", 409
 
         try:
-            role_enum = RoleEnum.ADMIN if role == "admin" else RoleEnum.LEADER
             user = User(
                 enrrollment_number=enrrollment_number,
                 name=name,
                 password=password,
-                role=role_enum,
+                role=RoleEnum.LEADER,
             )
             db.session.add(user)
             db.session.commit()
@@ -42,49 +41,3 @@ class AuthService:
             return None, "Matrícula o contraseña incorrecta.", 401
 
         return user, None, None
-
-    @staticmethod
-    def get_all():
-        return User.query.all()
-
-    @staticmethod
-    def get_by_id(user_id):
-        return User.query.get(user_id)
-
-    @staticmethod
-    def get_by_enrollment(enrrollment_number):
-        return User.query.filter_by(enrrollment_number=enrrollment_number).first()
-
-    @staticmethod
-    def update(user_id, **kwargs):
-        user = User.query.get(user_id)
-        if not user:
-            return None, "Usuario no encontrado.", 404
-
-        try:
-            if "name" in kwargs:
-                user.name = kwargs["name"]
-            if "password" in kwargs:
-                user.set_password(kwargs["password"])
-            if "role" in kwargs:
-                user.role = kwargs["role"]
-
-            db.session.commit()
-            return user, None, None
-        except Exception:
-            db.session.rollback()
-            return None, "Error al actualizar usuario.", 500
-
-    @staticmethod
-    def delete(user_id):
-        user = User.query.get(user_id)
-        if not user:
-            return None, "Usuario no encontrado.", 404
-
-        try:
-            db.session.delete(user)
-            db.session.commit()
-            return user, None, None
-        except Exception:
-            db.session.rollback()
-            return None, "Error al eliminar usuario.", 500

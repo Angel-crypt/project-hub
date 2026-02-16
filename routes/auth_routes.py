@@ -1,6 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from services.auth_service import AuthService
-from utils.decorators import admin_required
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
@@ -15,32 +14,17 @@ def register():
         )
 
         if error:
-            return render_template("auth/register.html", error=error, status_code=status_code), status_code
+            return (
+                render_template(
+                    "auth/register.html", error=error, status_code=status_code
+                ),
+                status_code,
+            )
 
         flash("Registro exitoso. Por favor inicia sesión.", "success")
         return redirect(url_for("auth.login"))
 
     return render_template("auth/register.html")
-
-
-@auth_bp.route("/register-admin", methods=["GET", "POST"])
-@admin_required
-def register_admin():
-    if request.method == "POST":
-        user, error, status_code = AuthService.register(
-            enrrollment_number=request.form.get("enrrollment_number"),
-            name=request.form.get("name"),
-            password=request.form.get("password"),
-            role="admin",
-        )
-
-        if error:
-            return render_template("admin/manage_admin.html", error=error, status_code=status_code), status_code
-
-        flash("Administrador registrado exitosamente.", "success")
-        return redirect(url_for("auth.register_admin"))
-
-    return render_template("admin/manage_admin.html")
 
 
 @auth_bp.route("/login", methods=["GET", "POST"])
@@ -52,7 +36,12 @@ def login():
         )
 
         if error:
-            return render_template("auth/login.html", error=error, status_code=status_code), status_code
+            return (
+                render_template(
+                    "auth/login.html", error=error, status_code=status_code
+                ),
+                status_code,
+            )
 
         session["user_id"] = user.id
         session["user_name"] = user.name
