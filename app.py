@@ -33,6 +33,11 @@ def create_app():
     @app.route("/home")
     @login_required
     def home():
-        return render_template("home.html")
+        from services.project_service import ProjectService
+        from flask import session
+        public_projects = []
+        if session.get("role") == "leader":
+            public_projects = ProjectService.get_public()
+        return render_template("home.html", public_projects=public_projects)
 
     return app

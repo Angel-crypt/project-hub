@@ -29,11 +29,14 @@ def create_project():
         if errors:
             return jsonify({"errors": errors}), 422
 
+        is_public = data.get("is_public", False) if data else False
+
         project, error, status_code = ProjectService.create(
             name=name,
             description=description,
             leader_id=session.get("user_id"),
             call_id=call_id,
+            is_public=bool(is_public),
         )
 
         if error:
@@ -89,12 +92,15 @@ def update_project(project_id):
         if errors:
             return jsonify({"errors": errors}), 422
 
+        is_public = data.get("is_public", False) if data else False
+
         project, error, status_code = ProjectService.update(
             project_id=project_id,
             user_id=session.get("user_id"),
             role=session.get("role"),
             name=name,
             description=description,
+            is_public=bool(is_public),
         )
 
         if error:
@@ -112,6 +118,27 @@ def update_project(project_id):
 
     except Exception as e:
         print(f"Error in update_project: {e}")
+        return jsonify({"error": "Error interno del servidor."}), 500
+
+
+@project_bp.route("/<int:project_id>/visibility", methods=["PATCH"])
+@login_required
+def toggle_visibility(project_id):
+    try:
+        project, error, status_code = ProjectService.toggle_visibility(
+            project_id=project_id,
+            user_id=session.get("user_id"),
+        )
+
+        if error:
+            return jsonify({"error": error}), status_code
+
+        return jsonify({
+            "message": "Visibilidad actualizada.",
+            "is_public": project.is_public,
+        }), 200
+
+    except Exception as e:
         return jsonify({"error": "Error interno del servidor."}), 500
 
 
@@ -144,8 +171,8 @@ def view_project(project_id):
     role = session.get("role")
     user_id = session.get("user_id")
 
-    # Permission check
-    if role not in ["admin", "owner"] and project.leader_id != user_id:
+    # Permission check: allow if admin/owner, leader, or project is public
+    if role not in ["admin", "owner"] and project.leader_id != user_id and not project.is_public:
         return render_template("403.html"), 403
 
     return render_template("project/view_project.html", project=project)

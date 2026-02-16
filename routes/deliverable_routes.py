@@ -17,9 +17,8 @@ def view_deliverable(deliverable_id):
     role = session.get("role")
     user_id = session.get("user_id")
 
-    if role not in ["admin", "owner"] and project.leader_id != user_id:
+    if role not in ["admin", "owner"] and project.leader_id != user_id and not project.is_public:
         return jsonify({"error": "No tienes permiso para ver este archivo."}), 403
-
 
     filename = os.path.basename(deliverable.file_path)
     uploads_dir = os.path.join(current_app.root_path, 'static', 'uploads')
@@ -35,7 +34,7 @@ def download_deliverable(deliverable_id):
     role = session.get("role")
     user_id = session.get("user_id")
 
-    if role not in ["admin", "owner"] and project.leader_id != user_id:
+    if role not in ["admin", "owner"] and project.leader_id != user_id and not project.is_public:
         return jsonify({"error": "No tienes permiso para descargar este archivo."}), 403
 
     filename = os.path.basename(deliverable.file_path)

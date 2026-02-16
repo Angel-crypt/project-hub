@@ -4,7 +4,7 @@ from models import db, Project
 
 class ProjectService:
     @staticmethod
-    def create(name, description, leader_id, call_id):
+    def create(name, description, leader_id, call_id, is_public=False):
         if not name or not name.strip():
             return None, "El nombre es obligatorio.", 422
 
@@ -26,6 +26,7 @@ class ProjectService:
                 description=description,
                 leader_id=leader_id,
                 call_id=call_id,
+                is_public=is_public,
             )
             db.session.add(project)
             db.session.commit()
@@ -68,6 +69,8 @@ class ProjectService:
         try:
             if "description" in kwargs:
                 project.description = kwargs["description"]
+            if "is_public" in kwargs:
+                project.is_public = kwargs["is_public"]
 
             db.session.commit()
             return project, None, None
@@ -75,6 +78,27 @@ class ProjectService:
             db.session.rollback()
             print(f"[ProjectService.update] {e}")
             return None, "Error al actualizar el proyecto.", 500
+
+    @staticmethod
+    def toggle_visibility(project_id, user_id):
+        project = Project.query.get(project_id)
+        if not project:
+            return None, "Proyecto no encontrado.", 404
+
+        if project.leader_id != user_id:
+            return None, "No tienes permiso para cambiar la visibilidad.", 403
+
+        try:
+            project.is_public = not project.is_public
+            db.session.commit()
+            return project, None, None
+        except Exception as e:
+            db.session.rollback()
+            return None, "Error al cambiar la visibilidad.", 500
+
+    @staticmethod
+    def get_public():
+        return Project.query.filter_by(is_public=True).all()
 
     @staticmethod
     def delete(project_id, user_id, role):
