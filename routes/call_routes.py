@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, request, jsonify
+from werkzeug.wrappers import Response
 from services.call_service import CallService
 from utils.decorators import login_required, admin_required
 from datetime import datetime
@@ -6,9 +7,10 @@ from datetime import datetime
 call_bp = Blueprint("call", __name__, url_prefix="/call")
 
 
+# Crea una convocatoria. Espera JSON con title, description, opening_date, closing_date
 @call_bp.route("/", methods=["POST"])
 @admin_required
-def create_call():
+def create_call() -> Response:
     try:
         data = request.get_json()
 
@@ -17,6 +19,7 @@ def create_call():
         opening_date = data.get("opening_date") if data else None
         closing_date = data.get("closing_date") if data else None
 
+        # Validacion de campos obligatorios
         errors = {}
 
         if not title:
@@ -30,6 +33,7 @@ def create_call():
         if not closing_date:
             errors["closing_date"] = "La fecha de cierre es obligatoria."
 
+        # Validacion de coherencia entre fechas
         if opening_date and closing_date:
             try:
                 opening_dt = datetime.strptime(opening_date, "%Y-%m-%d")
@@ -66,25 +70,28 @@ def create_call():
         return jsonify({"error": "Error interno del servidor."}), 500
 
 
+# Lista todas las convocatorias
 @call_bp.route("/", methods=["GET"])
 @login_required
-def view_all():
+def view_all() -> str:
     calls = CallService.get_all()
     return render_template("call/manage_call.html", calls=calls)
 
 
+# Muestra el detalle de una convocatoria
 @call_bp.route("/<int:call_id>", methods=["GET"])
 @login_required
-def view_call(call_id):
+def view_call(call_id: int) -> str:
     call = CallService.get_by_id(call_id)
     if not call:
         return render_template("404.html"), 404
     return render_template("call/view_call.html", call=call)
 
 
+# Actualiza una convocatoria. Espera JSON con los campos a modificar
 @call_bp.route("/<int:call_id>", methods=["PUT"])
 @admin_required
-def update_call(call_id):
+def update_call(call_id: int) -> Response:
     try:
         data = request.get_json()
 
@@ -138,9 +145,10 @@ def update_call(call_id):
         return jsonify({"error": "Error interno del servidor."}), 500
 
 
+# Elimina una convocatoria. Falla si tiene proyectos asociados
 @call_bp.route("/<int:call_id>", methods=["DELETE"])
 @admin_required
-def delete_call(call_id):
+def delete_call(call_id: int) -> Response:
     try:
         call, error, status_code = CallService.delete(call_id)
 
