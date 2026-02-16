@@ -20,3 +20,13 @@ def admin_required(f):
             return redirect(url_for("home"))
         return f(*args, **kwargs)
     return decorated
+
+def owner_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if "user_id" not in session:
+            return redirect(url_for("auth.login"))
+        if session.get("role") != "owner":
+            return redirect(url_for("home"))
+        return f(*args, **kwargs)
+    return decorated
