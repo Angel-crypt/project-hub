@@ -17,6 +17,9 @@ class ProjectService:
         if Project.query.filter_by(name=name.strip()).first():
             return None, "Ya existe un proyecto con ese nombre.", 409
 
+        if Project.query.filter_by(leader_id=leader_id, call_id=call_id).first():
+            return None, "Solo puedes registrar un proyecto por convocatoria.", 409
+
         try:
             project = Project(
                 name=name.strip(),
@@ -78,9 +81,6 @@ class ProjectService:
         project = Project.query.get(project_id)
         if not project:
             return None, "Proyecto no encontrado.", 404
-
-        if project.leader_id != user_id:
-            return None, "No tienes permiso para eliminar este proyecto.", 403
 
         try:
             db.session.delete(project)
