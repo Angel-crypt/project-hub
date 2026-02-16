@@ -49,7 +49,15 @@ DEFAULT_PROJECT = [
         "name": "Proyecto de Energía Renovable",
         "description": "Desarrollo de un sistema de energía solar para comunidades rurales.",
         "leader_id": None,
-        "call_id": None,
+        "call_id": 1,
+        "is_public": True,
+    },
+    {
+        "name": "Aplicación de Salud Mental",
+        "description": "Creación de una app para el seguimiento y apoyo de la salud mental.",
+        "leader_id": None,
+        "call_id": 2,
+        "is_public": False,
     }
 ]
 
@@ -72,10 +80,8 @@ def seed_calls():
 
 def seed_projects():
     leader_id = User.query.filter_by(role=RoleEnum.LEADER).first().id
-    call_id = Call.query.first().id
     for project_data in DEFAULT_PROJECT:
         project_data["leader_id"] = leader_id
-        project_data["call_id"] = call_id
         if not Project.query.filter_by(name=project_data["name"]).first():
             db.session.add(Project(**project_data))
     

@@ -10,15 +10,17 @@ class Project(db.Model):
     description = db.Column(db.Text, nullable=True)
     leader_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     call_id = db.Column(db.Integer, db.ForeignKey("calls.id"), nullable=False)
+    is_public = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     leader = db.relationship("User", backref="projects", lazy=True)
 
-    def __init__(self, name, description, leader_id, call_id):
+    def __init__(self, name, description, leader_id, call_id, is_public=False):
         self.name = name
         self.description = description
         self.leader_id = leader_id
         self.call_id = call_id
+        self.is_public = is_public
 
     def __repr__(self):
         return f"<Proyecto {self.name}>"
