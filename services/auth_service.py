@@ -1,9 +1,12 @@
+from typing import Optional
 from models import db, User, RoleEnum
 
 
 class AuthService:
     @staticmethod
-    def register(enrollment_number, name, password):
+    def register(
+        enrollment_number: str, name: str, password: str
+    ) -> tuple[Optional[User], Optional[str], Optional[int]]:
         enrollment_number = enrollment_number.strip().upper() if enrollment_number else ""
 
         if not enrollment_number or len(enrollment_number) > 10:
@@ -33,7 +36,9 @@ class AuthService:
             return None, "Error al registrar usuario.", 500
 
     @staticmethod
-    def login(enrollment_number, password):
+    def login(
+        enrollment_number: str, password: str
+    ) -> tuple[Optional[User], Optional[str], Optional[int]]:
         enrollment_number = enrollment_number.strip().upper() if enrollment_number else ""
         user = User.query.filter_by(enrollment_number=enrollment_number).first()
 
