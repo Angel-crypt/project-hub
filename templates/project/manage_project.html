@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+
+{% block title %}Project HUB - Proyectos{% endblock %}
+
+{% block content %}
+<div class="page-header page-header--row">
+    <h1>Proyectos</h1>
+    {% if session.get('role') in ['owner', 'admin', 'leader'] %}
+    {% if calls %}
+    <button type="button" class="btn-create"
+        onclick="openProjectCreateModal('{{ url_for('project.create_project') }}')">
+        Crear
+    </button>
+    {% else %}
+    <button type="button" class="btn-create" disabled title="No hay convocatorias activas para crear proyectos.">
+        Crear (No hay convocatorias)
+    </button>
+    {% endif %}
+    {% endif %}
+</div>
+
+{% if projects %}
+<div class="table-wrapper">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Nombre del Proyecto</th>
+                <th>Descripción</th>
+                <th>Convocatoria</th>
+                <th>Fecha de Creación</th>
+                {% if session.get('role') in ['owner', 'admin'] %}
+                <th>Líder</th>
+                {% endif %}
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for project in projects %}
+            <tr>
+                <td>{{ project.name }}</td>
+                <td>{{ project.description }}</td>
+                <td>{{ project.call.title if project.call else 'Sin Convocatoria' }}</td>
+                <td>{{ project.created_at.strftime('%d/%m/%Y') }}</td>
+                {% if session.get('role') in ['owner', 'admin'] %}
+                <td>{{ project.leader.name if project.leader else 'Sin líder' }}</td>
+                <td class="table-actions">
+
+                    <!-- Admin/Owner cannot edit, only delete -->
+                    <!-- Actually user said "no puede actualizar ni eliminar" initially, then "Owner/Admin si puede eliminar, no puede actualizar" -->
+                    <!-- But for STUDENTS (who see this table filtered), they should see update actions? -->
+                    <!-- Wait, this logic block is inside "if role in ['owner', 'admin']". -->
+                    <!-- If I am a student, I DON't see this block? -->
+                    <!-- Student needs to see Actions for THEIR projects. -->
+
+                    <!-- Let's rethink the logic based on "Admins see Leader, Students don't". "Admins delete but don't update". "Students update/delete their own". -->
+
+                    <button type="button" class="btn-action btn-delete" title="Eliminar"
+                        onclick="openConfirmModal('{{ url_for('project.delete_project', project_id=project.id) }}', '{{ project.name }}')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                            </path>
+                        </svg>
+                    </button>
+                </td>
+                {% else %}
+                <!-- Student Actions -->
+                <td class="table-actions">
+                    <button type="button" class="btn-action btn-edit" title="Editar" onclick="openProjectEditModal(
+                            '{{ url_for('project.update_project', project_id=project.id) }}',
+                            '{{ project.name }}',
+                            '{{ project.description }}'
+                        )">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                    </button>
+                    <button type="button" class="btn-action btn-delete" title="Eliminar"
+                        onclick="openConfirmModal('{{ url_for('project.delete_project', project_id=project.id) }}', '{{ project.name }}')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                            </path>
+                        </svg>
+                    </button>
+                </td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<p class="empty-state">No hay convocatorias registradas.</p>
+{% endif %}
+
+
+<!-- Modal Proyecto (Crear / Editar) -->
+<div class="modal-overlay" id="modal-project" onclick="if(event.target===this)this.style.display='none'">
+    <div class="modal">
+        <div class="modal-header">
+            <h2 id="modal-project-title">Crear Proyecto</h2>
+            <button type="button" class="modal-close"
+                onclick="document.getElementById('modal-project').style.display='none'">&times;</button>
+        </div>
+        <form id="project-form" class="content-form" data-validate novalidate
+            onsubmit="return submitProjectForm(event)">
+            <div class="form-group">
+                <label for="project-name">Nombre del Proyecto</label>
+                <input type="text" id="project-name" name="name" class="form-input" maxlength="80"
+                    placeholder="Ej. Sistema de Gestión" required data-validate-field
+                    data-error-required="El nombre es obligatorio.">
+                <span class="field-hint">Máximo 80 caracteres.</span>
+                <span class="field-error" id="project-name-error"></span>
+            </div>
+
+            <div class="form-group" id="project-call-group">
+                <label for="project-call-id">Convocatoria</label>
+                <select id="project-call-id" name="call_id" class="form-input" required data-validate-field
+                    data-error-required="La convocatoria es obligatoria.">
+                    <option value="" disabled selected>Seleccione una convocatoria</option>
+                    {% for call in calls %}
+                    <option value="{{ call.id }}">{{ call.title }}</option>
+                    {% endfor %}
+                </select>
+                <span class="field-error" id="project-call-id-error"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="project-description">Descripción</label>
+                <textarea id="project-description" name="description" class="form-input" maxlength="255" rows="4"
+                    placeholder="Descripción breve del proyecto..."></textarea>
+                <span class="field-hint">Máximo 255 caracteres.</span>
+            </div>
+
+            <!-- Note: Call selection logic is handled in backend currently or needs a select lookup? 
+                 For now, create_project in backend takes 'call_id' from data. 
+                 If the user is creating a project, which call is it for? 
+                 The current UI doesn't seem to pass a call_id. 
+                 However, 'create_project' service requires call_id.
+                 If this page is 'manage projects', how do we know which call?
+                 Wait, if I am a student creating a project, I probably need to select a call?
+                 Or is there a default call?
+                 The previous 'openProjectCreateModal' had 'url_for(project.create_project)'.
+                 I will assume for now the user passes call_id if needed, or I might need to add a select.
+                 BUT, let's stick to fixing the ReferenceError first. The form submission might fail later on 'call_id' but that's a separate issue.
+            -->
+
+            <button type="submit" class="login-btn" disabled id="project-submit-btn">Guardar</button>
+        </form>
+    </div>
+</div>
+
+{% include 'partials/_confirm_modal.html' %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/form-validation.js') }}"></script>
+<script src="{{ url_for('static', filename='js/user-actions.js') }}"></script>
+<script src="{{ url_for('static', filename='js/project-actions.js') }}"></script>
+{% endblock %}
