@@ -4,19 +4,19 @@ from datetime import datetime
 
 DEFAULT_USERS = [
     {
-        "enrrollment_number": "OWNER001",
+        "enrollment_number ": "OWNER001",
         "name": "Owner",
         "password": "owner123",
         "role": RoleEnum.OWNER,
     },
     {
-        "enrrollment_number": "ADMIN001",
+        "enrollment_number ": "ADMIN001",
         "name": "Admin",
         "password": "admin123",
         "role": RoleEnum.ADMIN,
     },
     {
-        "enrrollment_number": "LEADER001",
+        "enrollment_number ": "LEADER001",
         "name": "Leader",
         "password": "leader123",
         "role": RoleEnum.LEADER,
@@ -47,7 +47,7 @@ DEFAULT_CALLS = [
 
 def seed_users():
     for user_data in DEFAULT_USERS:
-        if not User.query.filter_by(enrrollment_number=user_data["enrrollment_number"]).first():
+        if not User.query.filter_by(enrollment_number =user_data["enrollment_number "]).first():
             db.session.add(User(**user_data))
     
     db.session.commit()

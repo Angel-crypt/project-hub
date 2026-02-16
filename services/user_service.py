@@ -3,10 +3,10 @@ from models import db, User, RoleEnum
 
 class UserService:
     @staticmethod
-    def create(enrrollment_number, name, password, role="leader"):
-        enrrollment_number = enrrollment_number.strip().upper() if enrrollment_number else ""
+    def create(enrollment_number , name, password, role="leader"):
+        enrollment_number  = enrollment_number .strip().upper() if enrollment_number  else ""
 
-        if not enrrollment_number or len(enrrollment_number) > 10:
+        if not enrollment_number  or len(enrollment_number ) > 10:
             return None, "Matrícula inválida (máx. 10 caracteres).", 422
 
         if not name:
@@ -15,13 +15,13 @@ class UserService:
         if not password or len(password) < 6:
             return None, "La contraseña debe tener al menos 6 caracteres.", 422
 
-        if User.query.filter_by(enrrollment_number=enrrollment_number).first():
+        if User.query.filter_by(enrollment_number =enrollment_number ).first():
             return None, "No se pudo completar el registro.", 409
 
         try:
             role_enum = RoleEnum.ADMIN if role == "admin" else RoleEnum.LEADER
             user = User(
-                enrrollment_number=enrrollment_number,
+                enrollment_number =enrollment_number ,
                 name=name,
                 password=password,
                 role=role_enum,
@@ -46,8 +46,8 @@ class UserService:
         return User.query.get(user_id)
 
     @staticmethod
-    def get_by_enrollment(enrrollment_number):
-        return User.query.filter_by(enrrollment_number=enrrollment_number).first()
+    def get_by_enrollment(enrollment_number ):
+        return User.query.filter_by(enrollment_number =enrollment_number ).first()
 
     @staticmethod
     def update(user_id, **kwargs):
