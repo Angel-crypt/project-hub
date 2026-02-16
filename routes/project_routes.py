@@ -1,7 +1,7 @@
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, render_template, request, jsonify, session
 from services.project_service import ProjectService
-from utils.decorators import login_required, admin_required
-from datetime import datetime
+from services.call_service import CallService
+from utils.decorators import login_required
 
 project_bp = Blueprint("project", __name__, url_prefix="/project")
 
@@ -23,13 +23,16 @@ def create_project():
         elif len(name) > 80:
             errors["name"] = "El nombre no puede exceder 80 caracteres."
 
+        if not call_id:
+            errors["call_id"] = "La convocatoria es obligatoria."
+
         if errors:
             return jsonify({"errors": errors}), 422
 
         project, error, status_code = ProjectService.create(
             name=name,
             description=description,
-            leader_id=request.session.get("user_id"),
+            leader_id=session.get("user_id"),
             call_id=call_id,
         )
 
@@ -53,10 +56,18 @@ def create_project():
 @project_bp.route("/", methods=["GET"])
 @login_required
 def view_all():
-    user_id = request.session.get("user_id")
-    role = request.session.get("role")
+    user_id = session.get("user_id")
+    role = session.get("role")
     projects = ProjectService.get_all(user_id, role)
-    return render_template("project/manage_project.html", projects=projects)
+    calls = CallService.get_all()
+
+    if role not in ["admin", "owner"]:
+        user_project_call_ids = [p.call_id for p in projects if p.call_id]
+        calls = [c for c in calls if c.id not in user_project_call_ids]
+
+    return render_template(
+        "project/manage_project.html", projects=projects, calls=calls
+    )
 
 
 @project_bp.route("/<int:project_id>", methods=["PUT"])
@@ -80,10 +91,10 @@ def update_project(project_id):
 
         project, error, status_code = ProjectService.update(
             project_id=project_id,
-            user_id=request.session.get("user_id"),
-            role=request.session.get("role"),
+            user_id=session.get("user_id"),
+            role=session.get("role"),
             name=name,
-            description=description
+            description=description,
         )
 
         if error:
@@ -110,8 +121,8 @@ def delete_project(project_id):
     try:
         project, error, status_code = ProjectService.delete(
             project_id=project_id,
-            user_id=request.session.get("user_id"),
-            role=request.session.get("role")
+            user_id=session.get("user_id"),
+            role=session.get("role"),
         )
 
         if error:
