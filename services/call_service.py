@@ -1,4 +1,13 @@
+from datetime import datetime
 from models import db, Call
+
+
+def _parse_date(value):
+    if not value:
+        return None
+    if isinstance(value, datetime):
+        return value
+    return datetime.strptime(value, "%Y-%m-%d")
 
 
 class CallService:
@@ -10,7 +19,10 @@ class CallService:
         if not opening_date or not closing_date:
             return None, "Las fechas de apertura y cierre son obligatorias.", 422
 
-        if opening_date >= closing_date:
+        parsed_opening = _parse_date(opening_date)
+        parsed_closing = _parse_date(closing_date)
+
+        if parsed_opening >= parsed_closing:
             return None, "La fecha de apertura debe ser anterior a la de cierre.", 422
 
         if Call.query.filter_by(title=title.strip()).first():
@@ -20,13 +32,13 @@ class CallService:
             call = Call(
                 title=title.strip(),
                 description=description,
-                opening_date=opening_date,
-                closing_date=closing_date,
+                opening_date=parsed_opening,
+                closing_date=parsed_closing,
             )
             db.session.add(call)
             db.session.commit()
             return call, None, None
-        except Exception:
+        except Exception as e:
             db.session.rollback()
             return None, "Error al crear la convocatoria.", 500
 
@@ -57,14 +69,15 @@ class CallService:
             if "description" in kwargs:
                 call.description = kwargs["description"]
             if "opening_date" in kwargs:
-                call.opening_date = kwargs["opening_date"]
+                call.opening_date = _parse_date(kwargs["opening_date"])
             if "closing_date" in kwargs:
-                call.closing_date = kwargs["closing_date"]
+                call.closing_date = _parse_date(kwargs["closing_date"])
 
             db.session.commit()
             return call, None, None
-        except Exception:
+        except Exception as e:
             db.session.rollback()
+            print(f"[CallService.update] {e}")
             return None, "Error al actualizar la convocatoria.", 500
 
     @staticmethod
