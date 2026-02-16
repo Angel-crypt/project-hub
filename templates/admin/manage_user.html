@@ -3,17 +3,24 @@
 {% block title %}Project HUB - Usuarios{% endblock %}
 
 {% block content %}
-<div class="page-header page-header--row">
+<div class="page-header">
     <h1>Usuarios</h1>
 </div>
 
 {% set users = leaders %}
 {% set empty_message = "No hay usuarios registrados." %}
+{% set update_endpoint = 'user.update_leader' %}
+{% set delete_endpoint = 'user.delete_leader' %}
 {% include 'partials/_user_table.html' %}
 
+{% set edit_modal_title = "Editar Usuario" %}
+{% set name_placeholder = "Nombre del Usuario" %}
+{% include 'partials/_user_edit_modal.html' %}
+
+{% include 'partials/_confirm_modal.html' %}
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/toggle-password.js') }}"></script>
 <script src="{{ url_for('static', filename='js/form-validation.js') }}"></script>
+<script src="{{ url_for('static', filename='js/user-actions.js') }}"></script>
 {% endblock %}

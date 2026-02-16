@@ -12,6 +12,8 @@
 
 {% set users = admins %}
 {% set empty_message = "No hay administradores registrados." %}
+{% set update_endpoint = 'user.update_admin' %}
+{% set delete_endpoint = 'user.delete_admin' %}
 {% include 'partials/_user_table.html' %}
 
 {% set modal_title = "Registrar Administrador" %}
@@ -19,9 +21,15 @@
 {% set name_placeholder = "Nombre del Administrador" %}
 {% set submit_label = "Registrar Admin" %}
 {% include 'partials/_user_form_modal.html' %}
+
+{% set edit_modal_title = "Editar Administrador" %}
+{% include 'partials/_user_edit_modal.html' %}
+
+{% include 'partials/_confirm_modal.html' %}
 {% endblock %}
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/toggle-password.js') }}"></script>
 <script src="{{ url_for('static', filename='js/form-validation.js') }}"></script>
+<script src="{{ url_for('static', filename='js/user-actions.js') }}"></script>
 {% endblock %}
