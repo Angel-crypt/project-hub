@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+
+{% block title %}Project HUB - Detalle del Proyecto{% endblock %}
+
+{% block content %}
+<div class="page-header page-header--row">
+    <!-- Editable Title -->
+    <div style="flex: 1; margin-right: 1rem;">
+        <input type="text" id="project-name" class="editable-title" value="{{ project.name }}" readonly maxlength="80">
+    </div>
+    <a href="{{ url_for('project.view_all') }}" class="btn-secondary" title="Volver">
+        Volver
+    </a>
+</div>
+
+<div class="content-card">
+    <div class="detail-section">
+        <h3>Descripción</h3>
+        <!-- Editable Description -->
+        <textarea id="project-description" class="editable-description" readonly rows="5"
+            maxlength="255">{{ project.description }}</textarea>
+    </div>
+
+    <!-- Static Details -->
+    <div class="detail-grid">
+        <div class="detail-item">
+            <span class="detail-label">Convocatoria</span>
+            <span class="detail-value">{{ project.call.title if project.call else 'Sin Convocatoria' }}</span>
+        </div>
+        <div class="detail-item">
+            <span class="detail-label">Líder</span>
+            <span class="detail-value">{{ project.leader.name if project.leader else 'Sin líder' }}</span>
+        </div>
+        <div class="detail-item">
+            <span class="detail-label">Fecha de Creación</span>
+            <span class="detail-value">{{ project.created_at.strftime('%d/%m/%Y') }}</span>
+        </div>
+    </div>
+
+    <!-- Actions Section -->
+    <div class="actions-container"
+        style="margin-top: 2rem; border-top: 1px solid #e5e7eb; padding-top: 1.5rem; display: flex; gap: 1rem;">
+        {% set is_leader = session.get('user_id') == project.leader_id %}
+        {% set is_admin = session.get('role') in ['owner', 'admin'] %}
+
+        <!-- View Mode Actions -->
+        <div id="view-actions" style="display: flex; gap: 1rem;">
+            {% if is_leader %}
+            <button type="button" class="btn-create" onclick="toggleEditMode(true)">
+                Editar
+            </button>
+            {% endif %}
+
+            {% if is_leader or is_admin %}
+            <button type="button" class="btn-danger"
+                onclick="openConfirmModalCustom('{{ url_for('project.delete_project', project_id=project.id) }}', '{{ project.name }}')">
+                Eliminar
+            </button>
+            {% endif %}
+        </div>
+
+        <!-- Edit Mode Actions (Hidden by default) -->
+        <div id="edit-actions" style="display: none; gap: 1rem;">
+            <button type="button" class="btn-create" id="btn-save" onclick="saveProjectChanges()">
+                Guardar
+            </button>
+            <button type="button" class="btn-secondary" onclick="cancelEdit()">
+                Cancelar
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Confirm Modal Include -->
+{% include 'partials/_confirm_modal.html' %}
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/user-actions.js') }}"></script>
+<script>
+    // Store original values to revert on cancel
+    let originalName = "{{ project.name }}";
+    let originalDescription = `{{ project.description }}`;
+    const projectId = {{ project.id }};
+    const updateUrl = "{{ url_for('project.update_project', project_id=project.id) }}";
+
+    function toggleEditMode(enable) {
+        const nameInput = document.getElementById('project-name');
+        const descInput = document.getElementById('project-description');
+        const viewActions = document.getElementById('view-actions');
+        const editActions = document.getElementById('edit-actions');
+
+        if (enable) {
+            nameInput.removeAttribute('readonly');
+            descInput.removeAttribute('readonly');
+            nameInput.focus();
+            viewActions.style.display = 'none';
+            editActions.style.display = 'flex';
+        } else {
+            nameInput.setAttribute('readonly', true);
+            descInput.setAttribute('readonly', true);
+            viewActions.style.display = 'flex';
+            editActions.style.display = 'none';
+        }
+    }
+
+    function cancelEdit() {
+        // Revert values
+        document.getElementById('project-name').value = originalName;
+        document.getElementById('project-description').value = originalDescription;
+        toggleEditMode(false);
+    }
+
+    function saveProjectChanges() {
+        const name = document.getElementById('project-name').value.trim();
+        const description = document.getElementById('project-description').value.trim();
+        const btnSave = document.getElementById('btn-save');
+
+        if (!name) {
+            alert("El nombre del proyecto es obligatorio.");
+            return;
+        }
+
+        btnSave.disabled = true;
+        btnSave.textContent = "Guardando...";
+
+        fetch(updateUrl, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ name: name, description: description })
+        })
+            .then(response => response.json().then(data => ({ status: response.status, body: data })))
+            .then(res => {
+                if (res.status === 200) {
+                    // Update original values
+                    originalName = name;
+                    originalDescription = description;
+                    toggleEditMode(false);
+                    // Optional: Show success message/toast
+                } else {
+                    alert(res.body.error || "Error al actualizar el proyecto.");
+                    // Check if validation errors exist
+                    if (res.body.errors) {
+                        console.error(res.body.errors);
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("Error de conexión al guardar.");
+            })
+            .finally(() => {
+                btnSave.disabled = false;
+                btnSave.textContent = "Guardar";
+            });
+    }
+
+    // Custom helper to handle delete with redirect
+    // Reuse openConfirmModal from user-actions.js regarding UI, 
+    // but we need to override the submit action to redirect instead of reload.
+    // Since user-actions.js uses a global _deleteUrl and submitConfirm(), 
+    // we can overwrite submitConfirm on this page or use a separate modal mechanism.
+    // The easiest way is to use the existing modal but change what submitConfirm does.
+
+    // Check if user-actions.js defines submitConfirm attached to window or global scope.
+    // Yes, it defines `function submitConfirm()`.
+    // We can overwrite it for this page.
+
+    // Store the original function if needed, but here we just want custom behavior.
+    const originalSubmitConfirm = window.submitConfirm;
+
+    window.submitConfirm = function () {
+        if (!_deleteUrl) return;
+
+        fetch(_deleteUrl, { method: 'DELETE' })
+            .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+            .then(function (result) {
+                if (result.ok) {
+                    // Redirect to project list
+                    window.location.href = "{{ url_for('project.view_all') }}";
+                } else {
+                    closeConfirmModal();
+                    alert(result.data.error || 'Error al eliminar.');
+                }
+            });
+    };
+
+    function openConfirmModalCustom(url, name) {
+        // Just call the global from user-actions.js, the overridden submitConfirm will handle the rest
+        openConfirmModal(url, name);
+    }
+</script>
+{% endblock %}
