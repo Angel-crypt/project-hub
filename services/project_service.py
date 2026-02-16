@@ -1,10 +1,16 @@
-from datetime import datetime
+from typing import Optional
 from models import db, Project
 
 
 class ProjectService:
     @staticmethod
-    def create(name, description, leader_id, call_id, is_public=False):
+    def create(
+        name: str,
+        description: str,
+        leader_id: int,
+        call_id: int,
+        is_public: bool = False,
+    ) -> tuple[Optional[Project], Optional[str], Optional[int]]:
         if not name or not name.strip():
             return None, "El nombre es obligatorio.", 422
 
@@ -36,17 +42,24 @@ class ProjectService:
             return None, "Error al crear el proyecto.", 500
 
     @staticmethod
-    def get_all(user_id, role):
+    def get_all(user_id: int, role: str) -> list[Project]:
         if role in ["admin", "owner"]:
             return Project.query.all()
         return Project.query.filter_by(leader_id=user_id).all()
 
     @staticmethod
-    def get_by_id(project_id):
+    def get_by_id(project_id: int) -> Optional[Project]:
         return Project.query.get(project_id)
 
     @staticmethod
-    def update(project_id, user_id, role, **kwargs):
+    def update(
+        project_id: int,
+        user_id: int,
+        role: str,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        is_public: Optional[bool] = None,
+    ) -> tuple[Optional[Project], Optional[str], Optional[int]]:
         project = Project.query.get(project_id)
         if not project:
             return None, "Proyecto no encontrado.", 404
@@ -57,8 +70,8 @@ class ProjectService:
         if project.leader_id != user_id:
             return None, "No tienes permiso para editar este proyecto.", 403
 
-        if "name" in kwargs:
-            new_name = kwargs["name"].strip()
+        if name is not None:
+            new_name = name.strip()
             existing = Project.query.filter(
                 Project.name == new_name, Project.id != project_id
             ).first()
@@ -67,10 +80,10 @@ class ProjectService:
             project.name = new_name
 
         try:
-            if "description" in kwargs:
-                project.description = kwargs["description"]
-            if "is_public" in kwargs:
-                project.is_public = kwargs["is_public"]
+            if description is not None:
+                project.description = description
+            if is_public is not None:
+                project.is_public = is_public
 
             db.session.commit()
             return project, None, None
@@ -80,7 +93,9 @@ class ProjectService:
             return None, "Error al actualizar el proyecto.", 500
 
     @staticmethod
-    def toggle_visibility(project_id, user_id, role):
+    def toggle_visibility(
+        project_id: int, user_id: int, role: str
+    ) -> tuple[Optional[Project], Optional[str], Optional[int]]:
         project = Project.query.get(project_id)
         if not project:
             return None, "Proyecto no encontrado.", 404
@@ -97,11 +112,13 @@ class ProjectService:
             return None, "Error al cambiar la visibilidad.", 500
 
     @staticmethod
-    def get_public():
+    def get_public() -> list[Project]:
         return Project.query.filter_by(is_public=True).all()
 
     @staticmethod
-    def delete(project_id, user_id, role):
+    def delete(
+        project_id: int, user_id: int, role: str
+    ) -> tuple[Optional[Project], Optional[str], Optional[int]]:
         project = Project.query.get(project_id)
         if not project:
             return None, "Proyecto no encontrado.", 404
