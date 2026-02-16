@@ -69,14 +69,28 @@ function submitCallForm(e) {
             closing_date: document.getElementById('call-closing_date').value
         })
     })
-    .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
-    .then(function (result) {
-        if (result.ok) {
-            location.reload();
-        } else {
-            alert(result.data.error || 'Error al procesar.');
-        }
-    });
+        .then(function (res) {
+            if (!res.ok) {
+                return res.json().then(function (data) {
+                    var errorMsg = data.error || 'Error desconocido';
+                    if (data.errors) {
+                        errorMsg = Object.values(data.errors).join('\n');
+                    }
+                    showError(res.status, errorMsg);
+                    return { ok: false };
+                });
+            }
+            return res.json().then(function (data) { return { ok: true, data: data }; });
+        })
+        .then(function (result) {
+            if (result && result.ok) {
+                location.reload();
+            }
+        })
+        .catch(function (error) {
+            console.error('Error:', error);
+            showError(503, 'Error de conexión o del servidor.');
+        });
 
     return false;
 }

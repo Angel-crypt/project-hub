@@ -6,7 +6,7 @@ function showError(statusCode, message) {
     if (statusCode >= 400) {
         errorCat.src = `https://http.cat/${statusCode}`;
         errorMessage.textContent = message;
-        errorDisplay.style.display = 'block';
+        errorDisplay.style.display = 'flex';
 
         setTimeout(() => {
             errorDisplay.style.display = 'none';
