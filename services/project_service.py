@@ -32,18 +32,26 @@ class ProjectService:
             return None, "Error al crear el proyecto.", 500
 
     @staticmethod
-    def get_all():
-        return Project.query.all()
+    def get_all(user_id, role):
+        if role in ["admin", "owner"]:
+            return Project.query.all()
+        return Project.query.filter_by(leader_id=user_id).all()
 
     @staticmethod
     def get_by_id(project_id):
         return Project.query.get(project_id)
 
     @staticmethod
-    def update(project_id, **kwargs):
+    def update(project_id, user_id, role, **kwargs):
         project = Project.query.get(project_id)
         if not project:
             return None, "Proyecto no encontrado.", 404
+
+        if role in ["admin", "owner"]:
+            return None, "Los administradores no pueden editar proyectos.", 403
+
+        if project.leader_id != user_id:
+            return None, "No tienes permiso para editar este proyecto.", 403
 
         if "name" in kwargs:
             new_name = kwargs["name"].strip()
@@ -66,12 +74,13 @@ class ProjectService:
             return None, "Error al actualizar el proyecto.", 500
 
     @staticmethod
-    def delete(project_id):
+    def delete(project_id, user_id, role):
         project = Project.query.get(project_id)
         if not project:
             return None, "Proyecto no encontrado.", 404
 
-
+        if project.leader_id != user_id:
+            return None, "No tienes permiso para eliminar este proyecto.", 403
 
         try:
             db.session.delete(project)
