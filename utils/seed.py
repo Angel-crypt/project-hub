@@ -1,5 +1,5 @@
 from operator import call
-from models import db, User, RoleEnum, Call
+from models import db, User, RoleEnum, Call, Project
 from datetime import datetime
 
 DEFAULT_USERS = [
@@ -44,6 +44,15 @@ DEFAULT_CALLS = [
     },
 ]
 
+DEFAULT_PROJECT = [
+    {
+        "name": "Proyecto de Energía Renovable",
+        "description": "Desarrollo de un sistema de energía solar para comunidades rurales.",
+        "leader_id": None,
+        "call_id": None,
+    }
+]
+
 
 def seed_users():
     for user_data in DEFAULT_USERS:
@@ -58,5 +67,16 @@ def seed_calls():
         call_data["closing_date"] = datetime.strptime(call_data["closing_date"], "%Y-%m-%d")
         if not Call.query.filter_by(title=call_data["title"]).first():
             db.session.add(Call(**call_data))
+    
+    db.session.commit()
+
+def seed_projects():
+    leader_id = User.query.filter_by(role=RoleEnum.LEADER).first().id
+    call_id = Call.query.first().id
+    for project_data in DEFAULT_PROJECT:
+        project_data["leader_id"] = leader_id
+        project_data["call_id"] = call_id
+        if not Project.query.filter_by(name=project_data["name"]).first():
+            db.session.add(Project(**project_data))
     
     db.session.commit()
