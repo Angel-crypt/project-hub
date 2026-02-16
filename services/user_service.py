@@ -34,14 +34,6 @@ class UserService:
             return None, "Error al crear usuario.", 500
 
     @staticmethod
-    def get_all(role=None):
-        query = User.query
-        if role:
-            role_enum = RoleEnum.ADMIN if role == "admin" else RoleEnum.LEADER
-            query = query.filter_by(role=role_enum)
-        return query.all()
-
-    @staticmethod
     def get_admins():
         return User.query.filter_by(role=RoleEnum.ADMIN).all()
 
