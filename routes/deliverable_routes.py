@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify, session, current_app, send_from_directory
+from werkzeug.wrappers import Response
 from services.deliverable_service import DeliverableService
 from models.project import Project
 from models.deliverable import Deliverable
@@ -10,15 +11,18 @@ _CALL_INACTIVE_MSG = "La convocatoria no está activa. No se pueden realizar cam
 
 deliverable_bp = Blueprint("deliverable", __name__, url_prefix="/deliverable")
 
+
+# Muestra el archivo en el navegador (inline). Verifica permisos de visibilidad
 @deliverable_bp.route("/view/<int:deliverable_id>", methods=["GET"])
 @login_required
-def view_deliverable(deliverable_id):
+def view_deliverable(deliverable_id: int) -> Response:
     deliverable = Deliverable.query.get_or_404(deliverable_id)
     project = deliverable.project
 
     role = session.get("role")
     user_id = session.get("user_id")
 
+    # Acceso: admin/owner, leader del proyecto, o si ambos (proyecto y archivo) son publicos
     is_authorized = (
         role in ["admin", "owner"]
         or project.leader_id == user_id
@@ -32,9 +36,10 @@ def view_deliverable(deliverable_id):
     return send_from_directory(uploads_dir, filename, as_attachment=False)
 
 
+# Descarga el archivo con su nombre original. Mismas reglas de acceso que view
 @deliverable_bp.route("/download/<int:deliverable_id>", methods=["GET"])
 @login_required
-def download_deliverable(deliverable_id):
+def download_deliverable(deliverable_id: int) -> Response:
     deliverable = Deliverable.query.get_or_404(deliverable_id)
     project = deliverable.project
 
@@ -55,13 +60,14 @@ def download_deliverable(deliverable_id):
     return send_from_directory(uploads_dir, filename, as_attachment=True, download_name=deliverable.name + os.path.splitext(filename)[1])
 
 
-
+# Sube un archivo a un proyecto. Espera multipart/form-data con file, name, description, is_public
 @deliverable_bp.route("/upload/<int:project_id>", methods=["POST"])
 @login_required
-def upload_deliverable(project_id):
+def upload_deliverable(project_id: int) -> Response:
     project = Project.query.get_or_404(project_id)
     role = session.get("role")
 
+    # Solo permite subir si la convocatoria esta activa (excepto admin/owner)
     if role not in ["admin", "owner"] and project.call and not project.call.is_active:
         return jsonify({"error": _CALL_INACTIVE_MSG}), 403
 
@@ -102,9 +108,10 @@ def upload_deliverable(project_id):
     )
 
 
+# Alterna la visibilidad publica/privada de un archivo
 @deliverable_bp.route("/<int:deliverable_id>/visibility", methods=["PATCH"])
 @login_required
-def toggle_file_visibility(deliverable_id):
+def toggle_file_visibility(deliverable_id: int) -> Response:
     role = session.get("role")
     if role not in ["admin", "owner"]:
         deliverable_obj = Deliverable.query.get(deliverable_id)
@@ -126,9 +133,10 @@ def toggle_file_visibility(deliverable_id):
     }), 200
 
 
+# Actualiza nombre, descripcion o visibilidad de un archivo. Espera JSON
 @deliverable_bp.route("/<int:deliverable_id>", methods=["PUT"])
 @login_required
-def update_deliverable(deliverable_id):
+def update_deliverable(deliverable_id: int) -> Response:
     deliverable = Deliverable.query.get_or_404(deliverable_id)
     project = deliverable.project
     role = session.get("role")
@@ -161,9 +169,10 @@ def update_deliverable(deliverable_id):
         return jsonify({"error": str(e)}), 500
 
 
+# Elimina un archivo del proyecto y del disco. Solo leader del proyecto o admin/owner
 @deliverable_bp.route("/<int:deliverable_id>", methods=["DELETE"])
 @login_required
-def delete_deliverable(deliverable_id):
+def delete_deliverable(deliverable_id: int) -> Response:
     deliverable = Deliverable.query.get_or_404(deliverable_id)
 
     role = session.get("role")
@@ -180,6 +189,7 @@ def delete_deliverable(deliverable_id):
         )
 
     try:
+        # Elimina el archivo fisico del disco
         full_path = os.path.join(current_app.root_path, deliverable.file_path)
         if os.path.exists(full_path):
             os.remove(full_path)
