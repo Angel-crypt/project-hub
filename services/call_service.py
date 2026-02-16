@@ -39,13 +39,6 @@ class CallService:
         return Call.query.get(call_id)
 
     @staticmethod
-    def get_open():
-        return Call.query.filter(
-            Call.opening_date <= db.func.now(),
-            Call.closing_date >= db.func.now(),
-        ).all()
-
-    @staticmethod
     def update(call_id, **kwargs):
         call = Call.query.get(call_id)
         if not call:
