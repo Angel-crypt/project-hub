@@ -4,6 +4,7 @@ import enum
 
 
 class RoleEnum(enum.Enum):
+    OWNER = "owner"
     ADMIN = "admin"
     LEADER = "leader"
 

@@ -16,7 +16,7 @@ def admin_required(f):
     def decorated(*args, **kwargs):
         if "user_id" not in session:
             return redirect(url_for("auth.login"))
-        if session.get("role") != "admin":
+        if session.get("role") != "admin" and session.get("role") != "owner":
             return redirect(url_for("home"))
         return f(*args, **kwargs)
     return decorated
