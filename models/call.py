@@ -20,5 +20,10 @@ class Call(db.Model):
         self.opening_date = opening_date
         self.closing_date = closing_date
 
+    @property
+    def is_active(self):
+        now = datetime.utcnow()
+        return self.opening_date <= now <= self.closing_date
+
     def __repr__(self):
         return f"<Convocatoria {self.title}>"

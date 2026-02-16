@@ -6,6 +6,8 @@ from models import db
 from utils.decorators import login_required
 import os
 
+_CALL_INACTIVE_MSG = "La convocatoria no está activa. No se pueden realizar cambios."
+
 deliverable_bp = Blueprint("deliverable", __name__, url_prefix="/deliverable")
 
 @deliverable_bp.route("/view/<int:deliverable_id>", methods=["GET"])
@@ -58,6 +60,11 @@ def download_deliverable(deliverable_id):
 @login_required
 def upload_deliverable(project_id):
     project = Project.query.get_or_404(project_id)
+    role = session.get("role")
+
+    if role not in ["admin", "owner"] and project.call and not project.call.is_active:
+        return jsonify({"error": _CALL_INACTIVE_MSG}), 403
+
     if project.leader_id != session.get("user_id"):
         return (
             jsonify(
@@ -98,6 +105,12 @@ def upload_deliverable(project_id):
 @deliverable_bp.route("/<int:deliverable_id>/visibility", methods=["PATCH"])
 @login_required
 def toggle_file_visibility(deliverable_id):
+    role = session.get("role")
+    if role not in ["admin", "owner"]:
+        deliverable_obj = Deliverable.query.get(deliverable_id)
+        if deliverable_obj and deliverable_obj.project.call and not deliverable_obj.project.call.is_active:
+            return jsonify({"error": _CALL_INACTIVE_MSG}), 403
+
     deliverable, error, status = DeliverableService.toggle_visibility(
         deliverable_id=deliverable_id,
         user_id=session.get("user_id"),
@@ -118,6 +131,10 @@ def toggle_file_visibility(deliverable_id):
 def update_deliverable(deliverable_id):
     deliverable = Deliverable.query.get_or_404(deliverable_id)
     project = deliverable.project
+    role = session.get("role")
+
+    if role not in ["admin", "owner"] and project.call and not project.call.is_active:
+        return jsonify({"error": _CALL_INACTIVE_MSG}), 403
 
     if project.leader_id != session.get("user_id"):
         return jsonify({"error": "No tienes permiso para editar este archivo."}), 403
@@ -152,6 +169,9 @@ def delete_deliverable(deliverable_id):
     role = session.get("role")
     project = deliverable.project
     is_leader = project.leader_id == session.get("user_id")
+
+    if role not in ["admin", "owner"] and project.call and not project.call.is_active:
+        return jsonify({"error": _CALL_INACTIVE_MSG}), 403
 
     if role not in ["admin", "owner"] and not is_leader:
         return (

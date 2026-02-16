@@ -13,7 +13,7 @@
     </button>
     {% else %}
     <button type="button" class="btn-create" disabled title="No hay convocatorias activas para crear proyectos.">
-        Crear (No hay convocatorias)
+        Crear (No hay convocatorias disponibles)
     </button>
     {% endif %}
     {% endif %}
@@ -43,7 +43,7 @@
                 <td>{{ project.call.title if project.call else 'Sin Convocatoria' }}</td>
                 <td>{{ project.created_at.strftime('%d/%m/%Y') }}</td>
                 <td style="text-align: center;">
-                    {% if session.get('role') in ['owner', 'admin'] or session.get('user_id') == project.leader_id %}
+                    {% if session.get('role') in ['owner', 'admin'] or (session.get('user_id') == project.leader_id and project.call and project.call.is_active) %}
                     <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
                         <button class="btn-action" title="Cambiar visibilidad"
                             style="background: none; border: none; cursor: pointer;"
@@ -108,7 +108,7 @@
                     </button>
                 </td>
                 {% else %}
-                <!-- Student Actions -->
+                <!-- Leader Actions -->
                 <td class="table-actions">
                     <a href="{{ url_for('project.view_project', project_id=project.id) }}" class="btn-action btn-edit"
                         title="Ver Detalles">
@@ -118,6 +118,7 @@
                             <circle cx="12" cy="12" r="3"></circle>
                         </svg>
                     </a>
+                    {% if project.call and project.call.is_active %}
                     <button type="button" class="btn-action btn-edit" title="Editar" onclick="openProjectEditModal(
                             '{{ url_for('project.update_project', project_id=project.id) }}',
                             '{{ project.name }}',
@@ -139,6 +140,7 @@
                             </path>
                         </svg>
                     </button>
+                    {% endif %}
                 </td>
                 {% endif %}
             </tr>

@@ -37,7 +37,7 @@
         </div>
         <div class="detail-item">
             <span class="detail-label">Visibilidad</span>
-            {% if session.get('user_id') == project.leader_id or session.get('role') in ['admin', 'owner'] %}
+            {% if can_edit %}
             <label id="visibility-toggle"
                 style="display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer; user-select: none;">
                 <span style="position: relative; display: inline-block; width: 40px; height: 22px;">
@@ -63,15 +63,17 @@
 
     {% set is_leader = session.get('user_id') == project.leader_id %}
     {% set is_admin = session.get('role') in ['owner', 'admin'] %}
+    {% set call_active = project.call.is_active if project.call else false %}
+    {% set can_edit = is_admin or (is_leader and call_active) %}
 
-    {% if is_leader or is_admin %}
+    {% if can_edit %}
     <!-- Actions Section -->
     <div class="actions-container"
         style="margin-top: 2rem; border-top: 1px solid #e5e7eb; padding-top: 1.5rem; display: flex; gap: 1rem;">
 
         <!-- View Mode Actions -->
         <div id="view-actions" style="display: flex; gap: 1rem;">
-            {% if is_leader %}
+            {% if is_leader and call_active %}
             <button type="button" class="btn-create" onclick="toggleEditMode(true)">
                 Editar
             </button>
@@ -100,7 +102,7 @@
 <div class="detail-section" style="margin-top: 3rem;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
         <h3>Archivos del Proyecto</h3>
-        {% if is_leader and project.deliverables %}
+        {% if is_leader and call_active and project.deliverables %}
         <button class="btn-create" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" onclick="openUploadModal()">
             + Subir archivo
         </button>
@@ -116,13 +118,13 @@
         </svg>
         <p style="margin-bottom: 0.5rem; color: #6b7280; font-weight: 500;">No hay archivos cargados</p>
         <p style="margin-bottom: 1.5rem; color: #9ca3af; font-size: 0.85rem;">
-            {% if is_leader %}
+            {% if is_leader and call_active %}
             Sube el primer archivo de tu proyecto para comenzar.
             {% else %}
             El líder del proyecto aún no ha subido archivos.
             {% endif %}
         </p>
-        {% if is_leader %}
+        {% if is_leader and call_active %}
         <button class="btn-create" onclick="openUploadModal()">
             Subir archivo
         </button>
@@ -148,7 +150,7 @@
                     <td>{{ deliverable.description }}</td>
                     <td>{{ deliverable.created_at.strftime('%d/%m/%Y') }}</td>
                     <td style="text-align: center;">
-                        {% if is_leader or is_admin %}
+                        {% if can_edit %}
                         <div style="display: flex; align-items: center; gap: 0.35rem;">
                             <button class="btn-action" title="Cambiar visibilidad"
                                 style="background: none; border: none; cursor: pointer;"
@@ -212,7 +214,7 @@
                                 </svg>
                             </a>
 
-                            {% if is_leader %}
+                            {% if is_leader and call_active %}
                             <button class="btn-action btn-edit" title="Editar"
                                 onclick="openEditFileModal({{ deliverable.id }}, '{{ deliverable.description | e }}', {{ 'true' if deliverable.is_public else 'false' }})">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
@@ -224,7 +226,7 @@
                             </button>
                             {% endif %}
 
-                            {% if is_admin or (is_leader and session.get('user_id') == project.leader_id) %}
+                            {% if can_edit %}
                             <button class="btn-action btn-delete" title="Eliminar"
                                 onclick="openConfirmModalCustom('{{ url_for('deliverable.delete_deliverable', deliverable_id=deliverable.id) }}', '{{ deliverable.name }}')">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
