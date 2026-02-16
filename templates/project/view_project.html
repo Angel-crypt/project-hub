@@ -123,15 +123,15 @@
                     <td>{{ deliverable.created_at.strftime('%d/%m/%Y') }}</td>
                     <td>
                         <div class="table-actions">
-                            <a href="{{ url_for('deliverable.view_deliverable', deliverable_id=deliverable.id) }}"
-                                class="btn-action" title="Ver" target="_blank">
+                            <button class="btn-action" title="Ver"
+                                onclick="openPreviewModal('{{ url_for('deliverable.view_deliverable', deliverable_id=deliverable.id) }}', '{{ deliverable.name | e }}', '{{ deliverable.file_path.rsplit('.', 1)[1] | lower }}')">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
                                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                     stroke-linejoin="round">
                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                     <circle cx="12" cy="12" r="3"></circle>
                                 </svg>
-                            </a>
+                            </button>
                             <a href="{{ url_for('deliverable.download_deliverable', deliverable_id=deliverable.id) }}"
                                 class="btn-action" title="Descargar" target="_blank">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
@@ -250,6 +250,17 @@
                 <button type="submit" class="btn-create">Subir</button>
             </div>
         </form>
+    </div>
+</div>
+
+<!-- Preview Modal -->
+<div id="previewModal" class="modal-overlay" onclick="closePreviewOnBackdrop(event)">
+    <div style="background: #fff; border-radius: 12px; width: 90%; max-width: 900px; height: 85vh; display: flex; flex-direction: column; position: relative; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; border-bottom: 1px solid #e5e7eb;">
+            <h2 id="preview-title" style="margin: 0; font-size: 1.1rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></h2>
+            <button class="modal-close" onclick="closePreviewModal()" style="flex-shrink: 0;">&times;</button>
+        </div>
+        <div id="preview-content" style="flex: 1; overflow: auto; display: flex; align-items: center; justify-content: center; background: #f3f4f6;"></div>
     </div>
 </div>
 
@@ -438,6 +449,47 @@
             });
     }
 
+
+    // Preview Logic
+    const imageExts = ['png', 'jpg', 'jpeg'];
+    const pdfExts = ['pdf'];
+
+    function openPreviewModal(url, name, ext) {
+        const container = document.getElementById('preview-content');
+        document.getElementById('preview-title').textContent = name;
+        container.innerHTML = '';
+
+        if (imageExts.includes(ext)) {
+            const img = document.createElement('img');
+            img.src = url;
+            img.alt = name;
+            img.style.cssText = 'max-width: 100%; max-height: 100%; object-fit: contain;';
+            container.appendChild(img);
+        } else if (pdfExts.includes(ext)) {
+            const iframe = document.createElement('iframe');
+            iframe.src = url;
+            iframe.style.cssText = 'width: 100%; height: 100%; border: none;';
+            container.appendChild(iframe);
+        } else {
+            container.innerHTML = '<div style="text-align: center; color: #6b7280; padding: 2rem;">' +
+                '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 1rem;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>' +
+                '<p style="margin: 0 0 0.5rem 0; font-weight: 500;">Vista previa no disponible</p>' +
+                '<p style="margin: 0; font-size: 0.85rem;">Descarga el archivo para verlo.</p></div>';
+        }
+
+        document.getElementById('previewModal').style.display = 'flex';
+    }
+
+    function closePreviewModal() {
+        document.getElementById('previewModal').style.display = 'none';
+        document.getElementById('preview-content').innerHTML = '';
+    }
+
+    function closePreviewOnBackdrop(e) {
+        if (e.target === document.getElementById('previewModal')) {
+            closePreviewModal();
+        }
+    }
 
     // Edit File Logic
     function openEditFileModal(fileId, description) {
