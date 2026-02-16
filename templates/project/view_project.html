@@ -71,6 +71,176 @@
     </div>
 </div>
 
+<!-- Archivos del Proyecto -->
+<div class="detail-section" style="margin-top: 3rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h3>Archivos del Proyecto</h3>
+        {% if is_leader and project.deliverables %}
+        <button class="btn-create" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" onclick="openUploadModal()">
+            + Subir archivo
+        </button>
+        {% endif %}
+    </div>
+
+    {% if not project.deliverables %}
+    <div class="empty-state" style="text-align: center; padding: 3rem; background: #f9fafb; border-radius: 8px;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"
+            fill="none" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+            style="margin-bottom: 1rem;">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+        </svg>
+        <p style="margin-bottom: 0.5rem; color: #6b7280; font-weight: 500;">No hay archivos cargados</p>
+        <p style="margin-bottom: 1.5rem; color: #9ca3af; font-size: 0.85rem;">
+            {% if is_leader %}
+            Sube el primer archivo de tu proyecto para comenzar.
+            {% else %}
+            El l&iacute;der del proyecto a&uacute;n no ha subido archivos.
+            {% endif %}
+        </p>
+        {% if is_leader %}
+        <button class="btn-create" onclick="openUploadModal()">
+            Subir archivo
+        </button>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="table-wrapper">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Descripci&oacute;n</th>
+                    <th>Fecha</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for deliverable in project.deliverables %}
+                <tr>
+                    <td style="font-weight: 500;">{{ deliverable.name }}</td>
+                    <td>{{ deliverable.description }}</td>
+                    <td>{{ deliverable.created_at.strftime('%d/%m/%Y') }}</td>
+                    <td>
+                        <div class="table-actions">
+                            <a href="{{ url_for('deliverable.view_deliverable', deliverable_id=deliverable.id) }}"
+                                class="btn-action" title="Ver" target="_blank">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                            </a>
+                            <a href="{{ url_for('deliverable.download_deliverable', deliverable_id=deliverable.id) }}"
+                                class="btn-action" title="Descargar" target="_blank">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                            </a>
+
+                            {% if is_admin or (is_leader and session.get('user_id') == project.leader_id) %}
+                            <button class="btn-action btn-delete" title="Eliminar"
+                                onclick="openConfirmModalCustom('{{ url_for('deliverable.delete_deliverable', deliverable_id=deliverable.id) }}', '{{ deliverable.name }}')">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path
+                                        d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                    </path>
+                                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                                </svg>
+                            </button>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</div>
+</div>
+
+<!-- Upload Modal -->
+<div id="uploadModal" class="modal-overlay">
+    <div class="modal">
+        <div class="modal-header">
+            <h2>Subir Archivo</h2>
+            <button class="modal-close" onclick="closeUploadModal()">&times;</button>
+        </div>
+        <form id="uploadForm" action="{{ url_for('deliverable.upload_deliverable', project_id=project.id) }}"
+            method="POST" enctype="multipart/form-data" onsubmit="submitUpload(event)">
+            <div class="form-group">
+                <label for="upload-name">Nombre</label>
+                <input type="text" id="upload-name" name="name" class="form-input" required maxlength="80">
+            </div>
+            <div class="form-group">
+                <label for="upload-desc">Descripci&oacute;n</label>
+                <textarea id="upload-desc" name="description" class="form-input" rows="3" required></textarea>
+            </div>
+            <div class="form-group">
+                <label>Archivo</label>
+                <input type="file" id="upload-file" name="file" required
+                    accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" style="display: none;">
+                <!-- Drop zone / browse button -->
+                <div id="file-dropzone" onclick="document.getElementById('upload-file').click()"
+                    style="border: 2px dashed #d1d5db; border-radius: 8px; padding: 2rem; text-align: center; cursor: pointer; transition: all 0.2s; background: #f9fafb;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+                        fill="none" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                        style="margin-bottom: 0.5rem;">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    <p style="margin: 0; color: #6b7280; font-size: 0.9rem;">
+                        Haz clic para seleccionar un archivo
+                    </p>
+                    <p style="margin: 0.25rem 0 0 0; color: #9ca3af; font-size: 0.78rem;">
+                        PDF, DOCX, Im&aacute;genes &middot; M&aacute;x 10MB
+                    </p>
+                </div>
+                <!-- Selected file preview -->
+                <div id="file-preview" style="display: none; border: 1px solid #d1d5db; border-radius: 8px; padding: 0.75rem 1rem; background: #f9fafb; margin-top: 0;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem; min-width: 0;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                            </svg>
+                            <div style="min-width: 0;">
+                                <p id="file-name" style="margin: 0; font-size: 0.9rem; font-weight: 500; color: #1f2937; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></p>
+                                <p id="file-size" style="margin: 0; font-size: 0.78rem; color: #9ca3af;"></p>
+                            </div>
+                        </div>
+                        <button type="button" onclick="removeSelectedFile(event)" title="Quitar archivo"
+                            style="background: none; border: none; cursor: pointer; color: #9ca3af; padding: 0.25rem; display: flex; align-items: center; flex-shrink: 0;"
+                            onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='#9ca3af'">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="confirm-actions">
+                <button type="button" class="btn-cancel" onclick="closeUploadModal()">Cancelar</button>
+                <button type="submit" class="btn-create">Subir</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- Confirm Modal Include -->
 {% include 'partials/_confirm_modal.html' %}
 
@@ -158,6 +328,83 @@
                 btnSave.textContent = "Guardar";
             });
     }
+
+    // File Upload Logic
+    const fileInput = document.getElementById('upload-file');
+    const dropzone = document.getElementById('file-dropzone');
+    const filePreview = document.getElementById('file-preview');
+    const fileNameEl = document.getElementById('file-name');
+    const fileSizeEl = document.getElementById('file-size');
+
+    fileInput.addEventListener('change', function () {
+        if (this.files.length > 0) {
+            showFilePreview(this.files[0]);
+        }
+    });
+
+    function showFilePreview(file) {
+        fileNameEl.textContent = file.name;
+        fileSizeEl.textContent = formatFileSize(file.size);
+        dropzone.style.display = 'none';
+        filePreview.style.display = 'block';
+    }
+
+    function removeSelectedFile(e) {
+        e.stopPropagation();
+        fileInput.value = '';
+        filePreview.style.display = 'none';
+        dropzone.style.display = 'block';
+    }
+
+    function formatFileSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / 1048576).toFixed(1) + ' MB';
+    }
+
+    function openUploadModal() {
+        document.getElementById('uploadModal').style.display = 'flex';
+    }
+
+    function closeUploadModal() {
+        document.getElementById('uploadModal').style.display = 'none';
+        document.getElementById('uploadForm').reset();
+        filePreview.style.display = 'none';
+        dropzone.style.display = 'block';
+    }
+
+    function submitUpload(event) {
+        event.preventDefault();
+        const form = event.target;
+        const formData = new FormData(form);
+        const btn = form.querySelector('button[type="submit"]');
+        const originalText = btn.textContent;
+
+        btn.disabled = true;
+        btn.textContent = "Subiendo...";
+
+        fetch(form.action, {
+            method: 'POST',
+            body: formData
+        })
+            .then(res => res.json().then(data => ({ status: res.status, body: data })))
+            .then(result => {
+                if (result.status === 201) {
+                    window.location.reload();
+                } else {
+                    alert(result.body.error || "Error al subir el archivo.");
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Error de conexión.");
+                btn.disabled = false;
+                btn.textContent = originalText;
+            });
+    }
+
 
     // Custom helper to handle delete with redirect
     // Reuse openConfirmModal from user-actions.js regarding UI, 
