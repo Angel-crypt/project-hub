@@ -1,9 +1,12 @@
+from typing import Optional
 from models import db, User, RoleEnum
 
 
 class UserService:
     @staticmethod
-    def create(enrollment_number, name, password, role="leader"):
+    def create(
+        enrollment_number: str, name: str, password: str, role: str = "leader"
+    ) -> tuple[Optional[User], Optional[str], Optional[int]]:
         enrollment_number = enrollment_number.strip().upper() if enrollment_number else ""
 
         if not enrollment_number or len(enrollment_number) > 10:
@@ -34,34 +37,39 @@ class UserService:
             return None, "Error al crear usuario.", 500
 
     @staticmethod
-    def get_admins():
+    def get_admins() -> list[User]:
         return User.query.filter_by(role=RoleEnum.ADMIN).all()
 
     @staticmethod
-    def get_leaders():
+    def get_leaders() -> list[User]:
         return User.query.filter_by(role=RoleEnum.LEADER).all()
 
     @staticmethod
-    def get_by_id(user_id):
+    def get_by_id(user_id: int) -> Optional[User]:
         return User.query.get(user_id)
 
     @staticmethod
-    def get_by_enrollment(enrollment_number):
+    def get_by_enrollment(enrollment_number: str) -> Optional[User]:
         return User.query.filter_by(enrollment_number=enrollment_number).first()
 
     @staticmethod
-    def update(user_id, **kwargs):
+    def update(
+        user_id: int,
+        name: Optional[str] = None,
+        password: Optional[str] = None,
+        role: Optional[RoleEnum] = None,
+    ) -> tuple[Optional[User], Optional[str], Optional[int]]:
         user = User.query.get(user_id)
         if not user:
             return None, "Usuario no encontrado.", 404
 
         try:
-            if "name" in kwargs:
-                user.name = kwargs["name"]
-            if "password" in kwargs:
-                user.set_password(kwargs["password"])
-            if "role" in kwargs:
-                user.role = kwargs["role"]
+            if name is not None:
+                user.name = name
+            if password is not None:
+                user.set_password(password)
+            if role is not None:
+                user.role = role
 
             db.session.commit()
             return user, None, None
@@ -70,7 +78,7 @@ class UserService:
             return None, "Error al actualizar usuario.", 500
 
     @staticmethod
-    def delete(user_id):
+    def delete(user_id: int) -> tuple[Optional[User], Optional[str], Optional[int]]:
         user = User.query.get(user_id)
         if not user:
             return None, "Usuario no encontrado.", 404
