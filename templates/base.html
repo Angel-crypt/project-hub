@@ -92,7 +92,7 @@
                 </a>
 
                 {% if session.get('role') in ['owner', 'admin'] %}
-                <a href="#" class="sidebar-link" title="Proyectos">
+                <a href="{{ url_for('project.view_all') }}" class="sidebar-link" title="Proyectos">
                     <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                         stroke-linecap="round" stroke-linejoin="round">
                         <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
@@ -125,7 +125,7 @@
                 {% endif %}
 
                 {% if session.get('role') == 'leader' %}
-                <a href="#" class="sidebar-link" title="Mis Proyectos">
+                <a href="{{ url_for('project.view_all') }}" class="sidebar-link" title="Mis Proyectos">
                     <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                         stroke-linecap="round" stroke-linejoin="round">
                         <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
