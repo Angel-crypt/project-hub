@@ -1,6 +1,8 @@
+from typing import Optional
 from models import db
 from models.deliverable import Deliverable
 from werkzeug.utils import secure_filename
+from werkzeug.datastructures import FileStorage
 import os
 import uuid
 
@@ -20,13 +22,13 @@ FILE_SIGNATURES = {
 
 class DeliverableService:
     @staticmethod
-    def allowed_file(filename):
+    def allowed_file(filename: str) -> bool:
         return (
             "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
         )
 
     @staticmethod
-    def validate_file_content(file):
+    def validate_file_content(file: FileStorage) -> bool:
         filename = file.filename
         ext = filename.rsplit(".", 1)[1].lower()
 
@@ -43,7 +45,13 @@ class DeliverableService:
         )
 
     @staticmethod
-    def create(name, description, project_id, file, is_public=False):
+    def create(
+        name: str,
+        description: str,
+        project_id: int,
+        file: FileStorage,
+        is_public: bool = False,
+    ) -> tuple[Optional[Deliverable], Optional[str], Optional[int]]:
         if not file or file.filename == "":
             return None, "No se ha seleccionado ningún archivo.", 400
 
@@ -93,7 +101,9 @@ class DeliverableService:
             return None, str(e), 500
 
     @staticmethod
-    def toggle_visibility(deliverable_id, user_id, role):
+    def toggle_visibility(
+        deliverable_id: int, user_id: int, role: str
+    ) -> tuple[Optional[Deliverable], Optional[str], Optional[int]]:
         deliverable = Deliverable.query.get(deliverable_id)
         if not deliverable:
             return None, "Archivo no encontrado.", 404
@@ -110,5 +120,5 @@ class DeliverableService:
             return None, "Error al cambiar la visibilidad.", 500
 
     @staticmethod
-    def get_by_project(project_id):
+    def get_by_project(project_id: int) -> list[Deliverable]:
         return Deliverable.query.filter_by(project_id=project_id).all()
