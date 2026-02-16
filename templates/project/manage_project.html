@@ -43,6 +43,34 @@
                 <td>{{ project.call.title if project.call else 'Sin Convocatoria' }}</td>
                 <td>{{ project.created_at.strftime('%d/%m/%Y') }}</td>
                 <td style="text-align: center;">
+                    {% if session.get('role') in ['owner', 'admin'] or session.get('user_id') == project.leader_id %}
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                        <button class="btn-action" title="Cambiar visibilidad"
+                            style="background: none; border: none; cursor: pointer;"
+                            data-original="{{ 'true' if project.is_public else 'false' }}"
+                            data-current="{{ 'true' if project.is_public else 'false' }}"
+                            onclick="preToggleProjectVisibility(this)">
+                            {% if project.is_public %}
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            {% else %}
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                fill="none" stroke="#d1d5db" stroke-width="2.5" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                            {% endif %}
+                        </button>
+                        <button class="btn-create" style="display:none; font-size: 0.75rem; padding: 0.25rem 0.6rem;"
+                            onclick="applyProjectVisibility({{ project.id }}, this)">
+                            Aplicar
+                        </button>
+                    </div>
+                    {% else %}
                     {% if project.is_public %}
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
                         stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -54,6 +82,7 @@
                         <line x1="18" y1="6" x2="6" y2="18"></line>
                         <line x1="6" y1="6" x2="18" y2="18"></line>
                     </svg>
+                    {% endif %}
                     {% endif %}
                 </td>
                 {% if session.get('role') in ['owner', 'admin'] %}
@@ -126,7 +155,7 @@
         <div class="modal-header">
             <h2 id="modal-project-title">Crear Proyecto</h2>
             <button type="button" class="modal-close"
-                onclick="document.getElementById('modal-project').style.display='none'">&times;</button>
+                onclick="document.getElementById('modal-project').style.display='none'">×</button>
         </div>
         <form id="project-form" class="content-form" data-validate novalidate
             onsubmit="return submitProjectForm(event)">
@@ -180,4 +209,44 @@
 <script src="{{ url_for('static', filename='js/form-validation.js') }}"></script>
 <script src="{{ url_for('static', filename='js/user-actions.js') }}"></script>
 <script src="{{ url_for('static', filename='js/project-actions.js') }}"></script>
+<script>
+    var _checkSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+    var _crossSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+
+    function preToggleProjectVisibility(btn) {
+        var current = btn.getAttribute('data-current') === 'true';
+        var newVal = !current;
+        btn.setAttribute('data-current', newVal ? 'true' : 'false');
+        btn.innerHTML = newVal ? _checkSvg : _crossSvg;
+
+        var original = btn.getAttribute('data-original') === 'true';
+        var applyBtn = btn.parentElement.querySelector('.btn-create');
+        applyBtn.style.display = (newVal !== original) ? 'inline-block' : 'none';
+    }
+
+    function applyProjectVisibility(projectId, applyBtn) {
+        var toggleBtn = applyBtn.parentElement.querySelector('.btn-action');
+        applyBtn.disabled = true;
+        applyBtn.textContent = 'Aplicando...';
+
+        fetch('/project/' + projectId + '/visibility', { method: 'PATCH' })
+            .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+            .then(function (result) {
+                if (result.ok) {
+                    var isPublic = result.data.is_public;
+                    toggleBtn.setAttribute('data-original', isPublic ? 'true' : 'false');
+                    toggleBtn.setAttribute('data-current', isPublic ? 'true' : 'false');
+                    toggleBtn.innerHTML = isPublic ? _checkSvg : _crossSvg;
+                    applyBtn.style.display = 'none';
+                } else {
+                    alert(result.data.error || 'Error al cambiar visibilidad.');
+                }
+            })
+            .catch(function () { alert('Error de conexión.'); })
+            .finally(function () {
+                applyBtn.disabled = false;
+                applyBtn.textContent = 'Aplicar';
+            });
+    }
+</script>
 {% endblock %}

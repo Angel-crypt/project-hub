@@ -37,7 +37,7 @@
         </div>
         <div class="detail-item">
             <span class="detail-label">Visibilidad</span>
-            {% if session.get('user_id') == project.leader_id %}
+            {% if session.get('user_id') == project.leader_id or session.get('role') in ['admin', 'owner'] %}
             <label id="visibility-toggle"
                 style="display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer; user-select: none;">
                 <span style="position: relative; display: inline-block; width: 40px; height: 22px;">
@@ -51,6 +51,9 @@
                 </span>
                 <span id="visibility-label" style="font-size: 1.1rem; font-weight: 500; color: #1f2937;">{{ 'Público' if
                     project.is_public else 'Privado' }}</span>
+                <button type="button" id="btn-apply-project-vis" class="btn-create"
+                    style="display: none; padding: 0.2rem 0.6rem; font-size: 0.75rem; margin-left: 0.5rem;"
+                    onclick="applyProjectVisibility()">Aplicar</button>
             </label>
             {% else %}
             <span class="detail-value">{{ 'Público' if project.is_public else 'Privado' }}</span>
@@ -133,15 +136,60 @@
                     <th>Nombre</th>
                     <th>Descripción</th>
                     <th>Fecha</th>
+                    <th>Público</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
                 {% for deliverable in project.deliverables %}
+                {% if is_leader or is_admin or deliverable.is_public %}
                 <tr>
                     <td style="font-weight: 500;">{{ deliverable.name }}</td>
                     <td>{{ deliverable.description }}</td>
                     <td>{{ deliverable.created_at.strftime('%d/%m/%Y') }}</td>
+                    <td style="text-align: center;">
+                        {% if is_leader or is_admin %}
+                        <div style="display: flex; align-items: center; gap: 0.35rem;">
+                            <button class="btn-action" title="Cambiar visibilidad"
+                                style="background: none; border: none; cursor: pointer;"
+                                data-file-id="{{ deliverable.id }}"
+                                data-original="{{ 'true' if deliverable.is_public else 'false' }}"
+                                data-current="{{ 'true' if deliverable.is_public else 'false' }}"
+                                onclick="preToggleFileVisibility(this)">
+                                {% if deliverable.is_public %}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                    fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                                {% else %}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                    fill="none" stroke="#d1d5db" stroke-width="2.5" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                                {% endif %}
+                            </button>
+                            <button class="btn-create btn-apply-file-vis" data-file-id="{{ deliverable.id }}"
+                                style="display: none; padding: 0.15rem 0.5rem; font-size: 0.7rem;"
+                                onclick="applyFileVisibility({{ deliverable.id }}, this)">Aplicar</button>
+                        </div>
+                        {% else %}
+                        {% if deliverable.is_public %}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        {% else %}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="#d1d5db" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                        {% endif %}
+                        {% endif %}
+                    </td>
                     <td>
                         <div class="table-actions">
                             <button class="btn-action" title="Ver"
@@ -166,7 +214,7 @@
 
                             {% if is_leader %}
                             <button class="btn-action btn-edit" title="Editar"
-                                onclick="openEditFileModal({{ deliverable.id }}, '{{ deliverable.description | e }}')">
+                                onclick="openEditFileModal({{ deliverable.id }}, '{{ deliverable.description | e }}', {{ 'true' if deliverable.is_public else 'false' }})">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
                                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                     stroke-linejoin="round">
@@ -194,6 +242,7 @@
                         </div>
                     </td>
                 </tr>
+                {% endif %}
                 {% endfor %}
             </tbody>
         </table>
@@ -207,7 +256,7 @@
     <div class="modal">
         <div class="modal-header">
             <h2>Subir Archivo</h2>
-            <button class="modal-close" onclick="closeUploadModal()">&times;</button>
+            <button class="modal-close" onclick="closeUploadModal()">×</button>
         </div>
         <form id="uploadForm" action="{{ url_for('deliverable.upload_deliverable', project_id=project.id) }}"
             method="POST" enctype="multipart/form-data" onsubmit="submitUpload(event)">
@@ -237,7 +286,7 @@
                         Haz clic para seleccionar un archivo
                     </p>
                     <p style="margin: 0.25rem 0 0 0; color: #9ca3af; font-size: 0.78rem;">
-                        PDF, DOCX, Imágenes &middot; Máx 10MB
+                        PDF, DOCX, Imágenes · Máx 10MB
                     </p>
                 </div>
                 <!-- Selected file preview -->
@@ -271,6 +320,15 @@
                     </div>
                 </div>
             </div>
+            <div class="form-group">
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                    <input type="checkbox" id="upload-is-public" name="is_public" value="true"
+                        onchange="this.nextElementSibling.textContent = this.checked ? 'Hacer privado' : 'Hacer público'"
+                        style="width: 18px; height: 18px; accent-color: var(--accent-primary); cursor: pointer;">
+                    <span>Hacer público</span>
+                </label>
+                <span class="field-hint">Los archivos públicos son visibles para todos los usuarios.</span>
+            </div>
             <div class="confirm-actions">
                 <button type="button" class="btn-cancel" onclick="closeUploadModal()">Cancelar</button>
                 <button type="submit" class="btn-create">Subir</button>
@@ -288,7 +346,7 @@
             <h2 id="preview-title"
                 style="margin: 0; font-size: 1.1rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
             </h2>
-            <button class="modal-close" onclick="closePreviewModal()" style="flex-shrink: 0;">&times;</button>
+            <button class="modal-close" onclick="closePreviewModal()" style="flex-shrink: 0;">×</button>
         </div>
         <div id="preview-content"
             style="flex: 1; overflow: auto; display: flex; align-items: center; justify-content: center; background: #f3f4f6;">
@@ -301,13 +359,21 @@
     <div class="modal modal--sm">
         <div class="modal-header">
             <h2>Editar Archivo</h2>
-            <button class="modal-close" onclick="closeEditFileModal()">&times;</button>
+            <button class="modal-close" onclick="closeEditFileModal()">×</button>
         </div>
         <form id="editFileForm" onsubmit="submitEditFile(event)">
             <input type="hidden" id="edit-file-id">
             <div class="form-group">
                 <label for="edit-file-desc">Descripción</label>
                 <textarea id="edit-file-desc" class="form-input" rows="3" required></textarea>
+            </div>
+            <div class="form-group">
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                    <input type="checkbox" id="edit-file-is-public"
+                        onchange="this.nextElementSibling.textContent = this.checked ? 'Hacer privado' : 'Hacer público'"
+                        style="width: 18px; height: 18px; accent-color: var(--accent-primary); cursor: pointer;">
+                    <span id="edit-file-public-label">Hacer privado</span>
+                </label>
             </div>
             <div class="confirm-actions">
                 <button type="button" class="btn-cancel" onclick="closeEditFileModal()">Cancelar</button>
@@ -405,30 +471,90 @@
             });
     }
 
-    // Visibility Toggle
+    // File Visibility Toggle
+    const checkSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+    const crossSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+
+    function preToggleFileVisibility(btn) {
+        var current = btn.dataset.current === 'true';
+        var next = !current;
+        btn.dataset.current = String(next);
+        btn.innerHTML = next ? checkSvg : crossSvg;
+
+        var applyBtn = btn.parentElement.querySelector('.btn-apply-file-vis');
+        if (btn.dataset.current !== btn.dataset.original) {
+            applyBtn.style.display = 'inline-flex';
+        } else {
+            applyBtn.style.display = 'none';
+        }
+    }
+
+    function applyFileVisibility(fileId, applyBtn) {
+        applyBtn.disabled = true;
+        applyBtn.textContent = '...';
+
+        fetch('/deliverable/' + fileId + '/visibility', { method: 'PATCH' })
+            .then(res => res.json().then(data => ({ ok: res.ok, data: data })))
+            .then(result => {
+                if (result.ok) {
+                    var toggleBtn = applyBtn.parentElement.querySelector('[data-file-id="' + fileId + '"]');
+                    toggleBtn.dataset.original = String(result.data.is_public);
+                    toggleBtn.dataset.current = String(result.data.is_public);
+                    toggleBtn.innerHTML = result.data.is_public ? checkSvg : crossSvg;
+                    applyBtn.style.display = 'none';
+                } else {
+                    alert(result.data.error || 'Error al cambiar visibilidad.');
+                }
+            })
+            .catch(() => alert('Error de conexión.'))
+            .finally(() => {
+                applyBtn.disabled = false;
+                applyBtn.textContent = 'Aplicar';
+            });
+    }
+
+    // Project Visibility Toggle
+    var projectVisOriginal = {{ 'true' if project.is_public else 'false' }};
+
     function toggleProjectVisibility() {
         const checkbox = document.getElementById('toggle-public');
         const track = document.getElementById('toggle-track');
         const thumb = document.getElementById('toggle-thumb');
         const label = document.getElementById('visibility-label');
+        const applyBtn = document.getElementById('btn-apply-project-vis');
+
+        var isChecked = checkbox.checked;
+        track.style.background = isChecked ? '#10b981' : '#d1d5db';
+        thumb.style.left = isChecked ? '20px' : '2px';
+        label.textContent = isChecked ? 'Público' : 'Privado';
+
+        applyBtn.style.display = (isChecked !== projectVisOriginal) ? 'inline-flex' : 'none';
+    }
+
+    function applyProjectVisibility() {
+        const btn = document.getElementById('btn-apply-project-vis');
+        btn.disabled = true;
+        btn.textContent = '...';
 
         fetch('/project/' + projectId + '/visibility', { method: 'PATCH' })
             .then(res => res.json().then(data => ({ ok: res.ok, data: data })))
             .then(result => {
                 if (result.ok) {
                     const isPublic = result.data.is_public;
-                    checkbox.checked = isPublic;
-                    track.style.background = isPublic ? '#10b981' : '#d1d5db';
-                    thumb.style.left = isPublic ? '20px' : '2px';
-                    label.textContent = isPublic ? 'Público' : 'Privado';
+                    projectVisOriginal = isPublic;
+                    document.getElementById('toggle-public').checked = isPublic;
+                    document.getElementById('toggle-track').style.background = isPublic ? '#10b981' : '#d1d5db';
+                    document.getElementById('toggle-thumb').style.left = isPublic ? '20px' : '2px';
+                    document.getElementById('visibility-label').textContent = isPublic ? 'Público' : 'Privado';
+                    btn.style.display = 'none';
                 } else {
-                    checkbox.checked = !checkbox.checked;
                     alert(result.data.error || 'Error al cambiar visibilidad.');
                 }
             })
-            .catch(() => {
-                checkbox.checked = !checkbox.checked;
-                alert('Error de conexión.');
+            .catch(() => alert('Error de conexión.'))
+            .finally(() => {
+                btn.disabled = false;
+                btn.textContent = 'Aplicar';
             });
     }
 
@@ -465,15 +591,26 @@
         return (bytes / 1048576).toFixed(1) + ' MB';
     }
 
+    function resetUploadModal() {
+        document.getElementById('uploadForm').reset();
+        fileInput.value = '';
+        filePreview.style.display = 'none';
+        dropzone.style.display = 'block';
+        var publicCheckbox = document.getElementById('upload-is-public');
+        if (publicCheckbox) {
+            publicCheckbox.checked = false;
+            publicCheckbox.nextElementSibling.textContent = 'Hacer público';
+        }
+    }
+
     function openUploadModal() {
+        resetUploadModal();
         document.getElementById('uploadModal').style.display = 'flex';
     }
 
     function closeUploadModal() {
         document.getElementById('uploadModal').style.display = 'none';
-        document.getElementById('uploadForm').reset();
-        filePreview.style.display = 'none';
-        dropzone.style.display = 'block';
+        resetUploadModal();
     }
 
     function submitUpload(event) {
@@ -546,14 +683,16 @@
 
     function closePreviewOnBackdrop(e) {
         if (e.target === document.getElementById('previewModal')) {
-            closePreviewModal();
-        }
+            closePreviewMod}
     }
 
     // Edit File Logic
-    function openEditFileModal(fileId, description) {
+    function openEditFileModal(fileId, description, isPublic) {
         document.getElementById('edit-file-id').value = fileId;
         document.getElementById('edit-file-desc').value = description;
+        var checkbox = document.getElementById('edit-file-is-public');
+        checkbox.checked = isPublic;
+        document.getElementById('edit-file-public-label').textContent = isPublic ? 'Hacer privado' : 'Hacer público';
         document.getElementById('editFileModal').style.display = 'flex';
     }
 
@@ -576,10 +715,12 @@
         btn.disabled = true;
         btn.textContent = "Guardando...";
 
+        var isPublic = document.getElementById('edit-file-is-public').checked;
+
         fetch('/deliverable/' + fileId, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ description: description })
+            body: JSON.stringify({ description: description, is_public: isPublic })
         })
             .then(res => res.json().then(data => ({ ok: res.ok, data: data })))
             .then(result => {
