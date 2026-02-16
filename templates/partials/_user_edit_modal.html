@@ -1,0 +1,20 @@
+<div class="modal-overlay" id="modal-edit" onclick="if(event.target===this)this.style.display='none'">
+    <div class="modal">
+        <div class="modal-header">
+            <h2>{{ edit_modal_title }}</h2>
+            <button type="button" class="modal-close" onclick="document.getElementById('modal-edit').style.display='none'">&times;</button>
+        </div>
+        <form id="edit-form" class="content-form" data-validate novalidate
+            onsubmit="return submitEdit(event)">
+            <div class="form-group">
+                <label for="edit-name">Nombre Completo</label>
+                <input type="text" id="edit-name" name="name" class="form-input" placeholder="{{ name_placeholder }}"
+                    required data-validate-field data-error-required="El nombre es obligatorio.">
+                <span class="field-hint">Campo obligatorio.</span>
+                <span class="field-error" id="edit-name-error"></span>
+            </div>
+
+            <button type="submit" class="login-btn" disabled>Guardar</button>
+        </form>
+    </div>
+</div>
