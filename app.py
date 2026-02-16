@@ -1,6 +1,6 @@
 from flask import Flask, redirect, url_for, render_template
 from models import db
-from routes import auth_bp, user_bp, call_bp
+from routes import auth_bp, user_bp, call_bp, project_bp
 from utils.decorators import login_required
 from utils.seed import seed_users, seed_calls, seed_projects
 
@@ -17,6 +17,7 @@ def create_app():
     app.register_blueprint(auth_bp)
     app.register_blueprint(user_bp)
     app.register_blueprint(call_bp)
+    app.register_blueprint(project_bp)
 
     with app.app_context():
         db.create_all()
