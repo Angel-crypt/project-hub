@@ -1,11 +1,15 @@
+from typing import Optional
 from flask import Blueprint, render_template, request, jsonify, session
+from werkzeug.wrappers import Response
 from services.project_service import ProjectService
 from services.call_service import CallService
 from utils.decorators import login_required
 
 
-def _check_call_active(project_id=None, call_id=None):
-    """Return error response if call is inactive and user is not admin/owner."""
+def _check_call_active(
+    project_id: Optional[int] = None, call_id: Optional[int] = None
+) -> Optional[tuple[Response, int]]:
+    """Retorna respuesta de error si la convocatoria esta inactiva y el usuario no es admin/owner."""
     role = session.get("role")
     if role in ["admin", "owner"]:
         return None
@@ -23,9 +27,10 @@ def _check_call_active(project_id=None, call_id=None):
 project_bp = Blueprint("project", __name__, url_prefix="/project")
 
 
+# Crea un proyecto. Espera JSON con name, description, call_id, is_public
 @project_bp.route("/", methods=["POST"])
 @login_required
-def create_project():
+def create_project() -> Response:
     try:
         data = request.get_json()
 
@@ -33,6 +38,7 @@ def create_project():
         description = data.get("description", "").strip() if data else ""
         call_id = data.get("call_id") if data else None
 
+        # Validacion de campos obligatorios
         errors = {}
 
         if not name:
@@ -46,6 +52,7 @@ def create_project():
         if errors:
             return jsonify({"errors": errors}), 422
 
+        # Verificar que la convocatoria este activa para leaders
         blocked = _check_call_active(call_id=call_id)
         if blocked:
             return blocked
@@ -77,14 +84,16 @@ def create_project():
         return jsonify({"error": "Error interno del servidor."}), 500
 
 
+# Lista proyectos: admin/owner ven todos, leaders solo los propios
 @project_bp.route("/", methods=["GET"])
 @login_required
-def view_all():
+def view_all() -> str:
     user_id = session.get("user_id")
     role = session.get("role")
     projects = ProjectService.get_all(user_id, role)
     calls = CallService.get_all()
 
+    # Leaders solo ven convocatorias activas donde no tienen proyecto
     if role not in ["admin", "owner"]:
         user_project_call_ids = [p.call_id for p in projects if p.call_id]
         calls = [c for c in calls if c.id not in user_project_call_ids and c.is_active]
@@ -94,9 +103,10 @@ def view_all():
     )
 
 
+# Actualiza un proyecto. Espera JSON con name, description, is_public
 @project_bp.route("/<int:project_id>", methods=["PUT"])
 @login_required
-def update_project(project_id):
+def update_project(project_id: int) -> Response:
     try:
         blocked = _check_call_active(project_id=project_id)
         if blocked:
@@ -146,9 +156,10 @@ def update_project(project_id):
         return jsonify({"error": "Error interno del servidor."}), 500
 
 
+# Alterna la visibilidad publica/privada de un proyecto
 @project_bp.route("/<int:project_id>/visibility", methods=["PATCH"])
 @login_required
-def toggle_visibility(project_id):
+def toggle_visibility(project_id: int) -> Response:
     try:
         blocked = _check_call_active(project_id=project_id)
         if blocked:
@@ -172,9 +183,10 @@ def toggle_visibility(project_id):
         return jsonify({"error": "Error interno del servidor."}), 500
 
 
+# Elimina un proyecto y sus archivos asociados
 @project_bp.route("/<int:project_id>", methods=["DELETE"])
 @login_required
-def delete_project(project_id):
+def delete_project(project_id: int) -> Response:
     try:
         blocked = _check_call_active(project_id=project_id)
         if blocked:
@@ -195,9 +207,10 @@ def delete_project(project_id):
         return jsonify({"error": "Error interno del servidor."}), 500
 
 
+# Muestra el detalle de un proyecto. Accesible si es publico, propio, o admin/owner
 @project_bp.route("/<int:project_id>", methods=["GET"])
 @login_required
-def view_project(project_id):
+def view_project(project_id: int) -> str:
     project = ProjectService.get_by_id(project_id)
     if not project:
         return render_template("404.html"), 404
@@ -205,7 +218,6 @@ def view_project(project_id):
     role = session.get("role")
     user_id = session.get("user_id")
 
-    # Permission check: allow if admin/owner, leader, or project is public
     if role not in ["admin", "owner"] and project.leader_id != user_id and not project.is_public:
         return render_template("403.html"), 403
 
