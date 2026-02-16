@@ -36,7 +36,7 @@
     {% if error %}
     <div class="error-overlay" onclick="if(event.target===this)this.style.display='none'">
         <div class="error-modal">
-            <button class="error-close" onclick="this.closest('.error-overlay').style.display='none'">&times;</button>
+            <button class="error-close" onclick="this.closest('.error-overlay').style.display='none'">×</button>
             <img src="https://http.cat/{{ status_code }}" alt="Error {{ status_code }}">
             <p>{{ error }}</p>
         </div>
@@ -48,7 +48,7 @@
         onclick="if(event.target===this)this.style.display='none'">
         <div class="error-modal">
             <button class="error-close"
-                onclick="document.getElementById('error-display').style.display='none'">&times;</button>
+                onclick="document.getElementById('error-display').style.display='none'">×</button>
             <img id="error-cat" src="" alt="Error Cat">
             <p id="error-message"></p>
         </div>
@@ -160,7 +160,7 @@
     {% endif %}
 
     <footer class="app-footer {% if session.get('user_id') %}app-footer--auth{% endif %}">
-        <p>ProjectHub &copy; 2025</p>
+        <p>ProjectHub © 2025</p>
     </footer>
 
     {% block scripts %}{% endblock %}
