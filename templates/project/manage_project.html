@@ -28,6 +28,7 @@
                 <th>Descripción</th>
                 <th>Convocatoria</th>
                 <th>Fecha de Creación</th>
+                <th>Público</th>
                 {% if session.get('role') in ['owner', 'admin'] %}
                 <th>Líder</th>
                 {% endif %}
@@ -41,6 +42,20 @@
                 <td>{{ project.description }}</td>
                 <td>{{ project.call.title if project.call else 'Sin Convocatoria' }}</td>
                 <td>{{ project.created_at.strftime('%d/%m/%Y') }}</td>
+                <td style="text-align: center;">
+                    {% if project.is_public %}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    {% else %}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="#d1d5db" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                    {% endif %}
+                </td>
                 {% if session.get('role') in ['owner', 'admin'] %}
                 <td>{{ project.leader.name if project.leader else 'Sin líder' }}</td>
                 <td class="table-actions">
@@ -52,14 +67,6 @@
                             <circle cx="12" cy="12" r="3"></circle>
                         </svg>
                     </a>
-                    <!-- Admin/Owner cannot edit, only delete -->
-                    <!-- Actually user said "no puede actualizar ni eliminar" initially, then "Owner/Admin si puede eliminar, no puede actualizar" -->
-                    <!-- But for STUDENTS (who see this table filtered), they should see update actions? -->
-                    <!-- Wait, this logic block is inside "if role in ['owner', 'admin']". -->
-                    <!-- If I am a student, I DON't see this block? -->
-                    <!-- Student needs to see Actions for THEIR projects. -->
-
-                    <!-- Let's rethink the logic based on "Admins see Leader, Students don't". "Admins delete but don't update". "Students update/delete their own". -->
 
                     <button type="button" class="btn-action btn-delete" title="Eliminar"
                         onclick="openConfirmModal('{{ url_for('project.delete_project', project_id=project.id) }}', '{{ project.name }}')">
@@ -85,7 +92,8 @@
                     <button type="button" class="btn-action btn-edit" title="Editar" onclick="openProjectEditModal(
                             '{{ url_for('project.update_project', project_id=project.id) }}',
                             '{{ project.name }}',
-                            '{{ project.description }}'
+                            '{{ project.description }}',
+                            {{ 'true' if project.is_public else 'false' }}
                         )">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -113,8 +121,6 @@
 <p class="empty-state">No hay convocatorias registradas.</p>
 {% endif %}
 
-
-<!-- Modal Proyecto (Crear / Editar) -->
 <div class="modal-overlay" id="modal-project" onclick="if(event.target===this)this.style.display='none'">
     <div class="modal">
         <div class="modal-header">
@@ -152,18 +158,15 @@
                 <span class="field-hint">Máximo 255 caracteres.</span>
             </div>
 
-            <!-- Note: Call selection logic is handled in backend currently or needs a select lookup? 
-                 For now, create_project in backend takes 'call_id' from data. 
-                 If the user is creating a project, which call is it for? 
-                 The current UI doesn't seem to pass a call_id. 
-                 However, 'create_project' service requires call_id.
-                 If this page is 'manage projects', how do we know which call?
-                 Wait, if I am a student creating a project, I probably need to select a call?
-                 Or is there a default call?
-                 The previous 'openProjectCreateModal' had 'url_for(project.create_project)'.
-                 I will assume for now the user passes call_id if needed, or I might need to add a select.
-                 BUT, let's stick to fixing the ReferenceError first. The form submission might fail later on 'call_id' but that's a separate issue.
-            -->
+            <div class="form-group" id="project-public-group">
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                    <input type="checkbox" id="project-is-public" name="is_public" value="true"
+                        onchange="updatePublicLabel()"
+                        style="width: 18px; height: 18px; accent-color: var(--accent-primary); cursor: pointer;">
+                    <span id="project-public-label">Hacer proyecto público</span>
+                </label>
+                <span class="field-hint">Los proyectos públicos son visibles para todos los usuarios.</span>
+            </div>
 
             <button type="submit" class="login-btn" disabled id="project-submit-btn">Guardar</button>
         </form>

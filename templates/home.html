@@ -6,4 +6,48 @@
 <div class="page-header">
     <h2>Bienvenido, {{ session.get('user_name', 'Usuario') }}</h2>
 </div>
+
+{% if session.get('role') == 'leader' %}
+<div class="detail-section" style="margin-top: 2rem;">
+    <h3>Proyectos Públicos</h3>
+
+    {% if public_projects %}
+    <div class="table-wrapper">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Nombre del Proyecto</th>
+                    <th>Descripción</th>
+                    <th>Convocatoria</th>
+                    <th>Líder</th>
+                    <th>Fecha</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for project in public_projects %}
+                <tr>
+                    <td style="font-weight: 500;">
+                        <a href="{{ url_for('project.view_project', project_id=project.id) }}"
+                            style="color: inherit; text-decoration: none;"
+                            onmouseover="this.style.textDecoration='underline'"
+                            onmouseout="this.style.textDecoration='none'">
+                            {{ project.name }}
+                        </a>
+                    </td>
+                    <td>{{ project.description or '—' }}</td>
+                    <td>{{ project.call.title if project.call else '—' }}</td>
+                    <td>{{ project.leader.name if project.leader else '—' }}</td>
+                    <td>{{ project.created_at.strftime('%d/%m/%Y') }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state" style="text-align: center; padding: 3rem; background: #f9fafb; border-radius: 8px;">
+        <p style="color: #6b7280;">No hay proyectos públicos disponibles.</p>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
 {% endblock %}

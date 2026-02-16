@@ -8,7 +8,7 @@
     <div style="flex: 1; margin-right: 1rem;">
         <input type="text" id="project-name" class="editable-title" value="{{ project.name }}" readonly maxlength="80">
     </div>
-    <a href="{{ url_for('project.view_all') }}" class="btn-secondary" title="Volver">
+    <a href="javascript:history.back()" class="btn-secondary" title="Volver">
         Volver
     </a>
 </div>
@@ -35,13 +35,36 @@
             <span class="detail-label">Fecha de Creación</span>
             <span class="detail-value">{{ project.created_at.strftime('%d/%m/%Y') }}</span>
         </div>
+        <div class="detail-item">
+            <span class="detail-label">Visibilidad</span>
+            {% if session.get('user_id') == project.leader_id %}
+            <label id="visibility-toggle"
+                style="display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer; user-select: none;">
+                <span style="position: relative; display: inline-block; width: 40px; height: 22px;">
+                    <input type="checkbox" id="toggle-public" {{ 'checked' if project.is_public else '' }}
+                        onchange="toggleProjectVisibility()"
+                        style="opacity: 0; width: 0; height: 0; position: absolute;">
+                    <span id="toggle-track"
+                        style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: {{ '#10b981' if project.is_public else '#d1d5db' }}; border-radius: 11px; transition: background 0.2s;"></span>
+                    <span id="toggle-thumb"
+                        style="position: absolute; top: 2px; left: {{ '20px' if project.is_public else '2px' }}; width: 18px; height: 18px; background: white; border-radius: 50%; transition: left 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2);"></span>
+                </span>
+                <span id="visibility-label" style="font-size: 1.1rem; font-weight: 500; color: #1f2937;">{{ 'Público' if
+                    project.is_public else 'Privado' }}</span>
+            </label>
+            {% else %}
+            <span class="detail-value">{{ 'Público' if project.is_public else 'Privado' }}</span>
+            {% endif %}
+        </div>
     </div>
 
+    {% set is_leader = session.get('user_id') == project.leader_id %}
+    {% set is_admin = session.get('role') in ['owner', 'admin'] %}
+
+    {% if is_leader or is_admin %}
     <!-- Actions Section -->
     <div class="actions-container"
         style="margin-top: 2rem; border-top: 1px solid #e5e7eb; padding-top: 1.5rem; display: flex; gap: 1rem;">
-        {% set is_leader = session.get('user_id') == project.leader_id %}
-        {% set is_admin = session.get('role') in ['owner', 'admin'] %}
 
         <!-- View Mode Actions -->
         <div id="view-actions" style="display: flex; gap: 1rem;">
@@ -51,12 +74,10 @@
             </button>
             {% endif %}
 
-            {% if is_leader or is_admin %}
             <button type="button" class="btn-danger"
                 onclick="openConfirmModalCustom('{{ url_for('project.delete_project', project_id=project.id) }}', '{{ project.name }}')">
                 Eliminar
             </button>
-            {% endif %}
         </div>
 
         <!-- Edit Mode Actions (Hidden by default) -->
@@ -69,6 +90,7 @@
             </button>
         </div>
     </div>
+    {% endif %}
 </div>
 
 <!-- Archivos del Proyecto -->
@@ -84,9 +106,8 @@
 
     {% if not project.deliverables %}
     <div class="empty-state" style="text-align: center; padding: 3rem; background: #f9fafb; border-radius: 8px;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"
-            fill="none" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
-            style="margin-bottom: 1rem;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9ca3af"
+            stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 1rem;">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
             <polyline points="14 2 14 8 20 8"></polyline>
         </svg>
@@ -95,7 +116,7 @@
             {% if is_leader %}
             Sube el primer archivo de tu proyecto para comenzar.
             {% else %}
-            El l&iacute;der del proyecto a&uacute;n no ha subido archivos.
+            El líder del proyecto aún no ha subido archivos.
             {% endif %}
         </p>
         {% if is_leader %}
@@ -110,7 +131,7 @@
             <thead>
                 <tr>
                     <th>Nombre</th>
-                    <th>Descripci&oacute;n</th>
+                    <th>Descripción</th>
                     <th>Fecha</th>
                     <th>Acciones</th>
                 </tr>
@@ -195,18 +216,18 @@
                 <input type="text" id="upload-name" name="name" class="form-input" required maxlength="80">
             </div>
             <div class="form-group">
-                <label for="upload-desc">Descripci&oacute;n</label>
+                <label for="upload-desc">Descripción</label>
                 <textarea id="upload-desc" name="description" class="form-input" rows="3" required></textarea>
             </div>
             <div class="form-group">
                 <label>Archivo</label>
-                <input type="file" id="upload-file" name="file" required
-                    accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" style="display: none;">
+                <input type="file" id="upload-file" name="file" required accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
+                    style="display: none;">
                 <!-- Drop zone / browse button -->
                 <div id="file-dropzone" onclick="document.getElementById('upload-file').click()"
                     style="border: 2px dashed #d1d5db; border-radius: 8px; padding: 2rem; text-align: center; cursor: pointer; transition: all 0.2s; background: #f9fafb;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
-                        fill="none" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                        stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
                         style="margin-bottom: 0.5rem;">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                         <polyline points="17 8 12 3 7 8"></polyline>
@@ -216,20 +237,24 @@
                         Haz clic para seleccionar un archivo
                     </p>
                     <p style="margin: 0.25rem 0 0 0; color: #9ca3af; font-size: 0.78rem;">
-                        PDF, DOCX, Im&aacute;genes &middot; M&aacute;x 10MB
+                        PDF, DOCX, Imágenes &middot; Máx 10MB
                     </p>
                 </div>
                 <!-- Selected file preview -->
-                <div id="file-preview" style="display: none; border: 1px solid #d1d5db; border-radius: 8px; padding: 0.75rem 1rem; background: #f9fafb; margin-top: 0;">
+                <div id="file-preview"
+                    style="display: none; border: 1px solid #d1d5db; border-radius: 8px; padding: 0.75rem 1rem; background: #f9fafb; margin-top: 0;">
                     <div style="display: flex; align-items: center; justify-content: space-between;">
                         <div style="display: flex; align-items: center; gap: 0.75rem; min-width: 0;">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                                fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+                                fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" style="flex-shrink: 0;">
                                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                                 <polyline points="14 2 14 8 20 8"></polyline>
                             </svg>
                             <div style="min-width: 0;">
-                                <p id="file-name" style="margin: 0; font-size: 0.9rem; font-weight: 500; color: #1f2937; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></p>
+                                <p id="file-name"
+                                    style="margin: 0; font-size: 0.9rem; font-weight: 500; color: #1f2937; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                </p>
                                 <p id="file-size" style="margin: 0; font-size: 0.78rem; color: #9ca3af;"></p>
                             </div>
                         </div>
@@ -237,7 +262,8 @@
                             style="background: none; border: none; cursor: pointer; color: #9ca3af; padding: 0.25rem; display: flex; align-items: center; flex-shrink: 0;"
                             onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='#9ca3af'">
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
                                 <line x1="18" y1="6" x2="6" y2="18"></line>
                                 <line x1="6" y1="6" x2="18" y2="18"></line>
                             </svg>
@@ -255,12 +281,18 @@
 
 <!-- Preview Modal -->
 <div id="previewModal" class="modal-overlay" onclick="closePreviewOnBackdrop(event)">
-    <div style="background: #fff; border-radius: 12px; width: 90%; max-width: 900px; height: 85vh; display: flex; flex-direction: column; position: relative; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
-        <div style="display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; border-bottom: 1px solid #e5e7eb;">
-            <h2 id="preview-title" style="margin: 0; font-size: 1.1rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></h2>
+    <div
+        style="background: #fff; border-radius: 12px; width: 90%; max-width: 900px; height: 85vh; display: flex; flex-direction: column; position: relative; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+        <div
+            style="display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; border-bottom: 1px solid #e5e7eb;">
+            <h2 id="preview-title"
+                style="margin: 0; font-size: 1.1rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+            </h2>
             <button class="modal-close" onclick="closePreviewModal()" style="flex-shrink: 0;">&times;</button>
         </div>
-        <div id="preview-content" style="flex: 1; overflow: auto; display: flex; align-items: center; justify-content: center; background: #f3f4f6;"></div>
+        <div id="preview-content"
+            style="flex: 1; overflow: auto; display: flex; align-items: center; justify-content: center; background: #f3f4f6;">
+        </div>
     </div>
 </div>
 
@@ -274,7 +306,7 @@
         <form id="editFileForm" onsubmit="submitEditFile(event)">
             <input type="hidden" id="edit-file-id">
             <div class="form-group">
-                <label for="edit-file-desc">Descripci&oacute;n</label>
+                <label for="edit-file-desc">Descripción</label>
                 <textarea id="edit-file-desc" class="form-input" rows="3" required></textarea>
             </div>
             <div class="confirm-actions">
@@ -370,6 +402,33 @@
             .finally(() => {
                 btnSave.disabled = false;
                 btnSave.textContent = "Guardar";
+            });
+    }
+
+    // Visibility Toggle
+    function toggleProjectVisibility() {
+        const checkbox = document.getElementById('toggle-public');
+        const track = document.getElementById('toggle-track');
+        const thumb = document.getElementById('toggle-thumb');
+        const label = document.getElementById('visibility-label');
+
+        fetch('/project/' + projectId + '/visibility', { method: 'PATCH' })
+            .then(res => res.json().then(data => ({ ok: res.ok, data: data })))
+            .then(result => {
+                if (result.ok) {
+                    const isPublic = result.data.is_public;
+                    checkbox.checked = isPublic;
+                    track.style.background = isPublic ? '#10b981' : '#d1d5db';
+                    thumb.style.left = isPublic ? '20px' : '2px';
+                    label.textContent = isPublic ? 'Público' : 'Privado';
+                } else {
+                    checkbox.checked = !checkbox.checked;
+                    alert(result.data.error || 'Error al cambiar visibilidad.');
+                }
+            })
+            .catch(() => {
+                checkbox.checked = !checkbox.checked;
+                alert('Error de conexión.');
             });
     }
 
