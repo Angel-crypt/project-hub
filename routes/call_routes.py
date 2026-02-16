@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, jsonify
 from services.call_service import CallService
 from utils.decorators import login_required, admin_required
+from datetime import datetime
 
 call_bp = Blueprint("call", __name__, url_prefix="/call")
 
@@ -8,25 +9,61 @@ call_bp = Blueprint("call", __name__, url_prefix="/call")
 @call_bp.route("/", methods=["POST"])
 @admin_required
 def create_call():
-    data = request.get_json()
-    title = data.get("title", "").strip() if data else ""
-    description = data.get("description", "").strip() if data else ""
-    opening_date = data.get("opening_date") if data else None
-    closing_date = data.get("closing_date") if data else None
+    try:
+        data = request.get_json()
 
-    if not title:
-        return jsonify({"error": "El título es obligatorio."}), 422
+        title = data.get("title", "").strip() if data else ""
+        description = data.get("description", "").strip() if data else ""
+        opening_date = data.get("opening_date") if data else None
+        closing_date = data.get("closing_date") if data else None
 
-    call, error, status_code = CallService.create(
-        title=title,
-        description=description,
-        opening_date=opening_date,
-        closing_date=closing_date,
-    )
-    if error:
-        return jsonify({"error": error}), status_code
+        errors = {}
 
-    return jsonify({"message": "Convocatoria creada.", "call_id": call.id}), 201
+        if not title:
+            errors["title"] = "El título es obligatorio."
+        elif len(title) > 80:
+            errors["title"] = "El título no puede exceder 80 caracteres."
+
+        if not opening_date:
+            errors["opening_date"] = "La fecha de inicio es obligatoria."
+
+        if not closing_date:
+            errors["closing_date"] = "La fecha de cierre es obligatoria."
+
+        if opening_date and closing_date:
+            try:
+                opening_dt = datetime.strptime(opening_date, "%Y-%m-%d")
+                closing_dt = datetime.strptime(closing_date, "%Y-%m-%d")
+
+                if closing_dt < opening_dt:
+                    errors["closing_date"] = (
+                        "La fecha de cierre debe ser posterior a la fecha de inicio."
+                    )
+            except ValueError:
+                errors["opening_date"] = "Formato de fecha inválido."
+
+        if errors:
+            return jsonify({"errors": errors}), 422
+
+        call, error, status_code = CallService.create(
+            title=title,
+            description=description,
+            opening_date=opening_date,
+            closing_date=closing_date,
+        )
+
+        if error:
+            return jsonify({"error": error}), status_code
+
+        return (
+            jsonify(
+                {"message": "Convocatoria creada exitosamente.", "call_id": call.id}
+            ),
+            201,
+        )
+
+    except Exception as e:
+        return jsonify({"error": "Error interno del servidor."}), 500
 
 
 @call_bp.route("/", methods=["GET"])
@@ -48,33 +85,69 @@ def view_call(call_id):
 @call_bp.route("/<int:call_id>", methods=["PUT"])
 @admin_required
 def update_call(call_id):
-    data = request.get_json()
-    title = data.get("title", "").strip() if data else ""
-    description = data.get("description", "").strip() if data else ""
-    opening_date = data.get("opening_date") if data else None
-    closing_date = data.get("closing_date") if data else None
+    try:
+        data = request.get_json()
 
-    if not title:
-        return jsonify({"error": "El título es obligatorio."}), 422
+        title = data.get("title", "").strip() if data else ""
+        description = data.get("description", "").strip() if data else ""
+        opening_date = data.get("opening_date") if data else None
+        closing_date = data.get("closing_date") if data else None
 
-    call, error, status_code = CallService.update(
-        call_id,
-        title=title,
-        description=description,
-        opening_date=opening_date,
-        closing_date=closing_date,
-    )
-    if error:
-        return jsonify({"error": error}), status_code
+        errors = {}
 
-    return jsonify({"message": "Convocatoria actualizada."})
+        if not title:
+            errors["title"] = "El título es obligatorio."
+        elif len(title) > 80:
+            errors["title"] = "El título no puede exceder 80 caracteres."
+
+        if not opening_date:
+            errors["opening_date"] = "La fecha de inicio es obligatoria."
+
+        if not closing_date:
+            errors["closing_date"] = "La fecha de cierre es obligatoria."
+
+        if opening_date and closing_date:
+            try:
+                opening_dt = datetime.strptime(opening_date, "%Y-%m-%d")
+                closing_dt = datetime.strptime(closing_date, "%Y-%m-%d")
+
+                if closing_dt < opening_dt:
+                    errors["closing_date"] = (
+                        "La fecha de cierre debe ser posterior a la fecha de inicio."
+                    )
+            except ValueError:
+                errors["opening_date"] = "Formato de fecha inválido."
+
+        if errors:
+            return jsonify({"errors": errors}), 422
+
+        call, error, status_code = CallService.update(
+            call_id,
+            title=title,
+            description=description,
+            opening_date=opening_date,
+            closing_date=closing_date,
+        )
+
+        if error:
+            return jsonify({"error": error}), status_code
+
+        return jsonify({"message": "Convocatoria actualizada exitosamente."})
+
+    except Exception as e:
+        return jsonify({"error": "Error interno del servidor."}), 500
 
 
 @call_bp.route("/<int:call_id>", methods=["DELETE"])
 @admin_required
 def delete_call(call_id):
-    call, error, status_code = CallService.delete(call_id)
-    if error:
-        return jsonify({"error": error}), status_code
+    try:
+        call, error, status_code = CallService.delete(call_id)
 
-    return jsonify({"message": "Convocatoria eliminada."})
+        if error:
+            return jsonify({"error": error}), status_code
+
+        return jsonify({"message": "Convocatoria eliminada exitosamente."})
+
+    except Exception as e:
+        return jsonify({"error": "Error interno del servidor."}), 500
